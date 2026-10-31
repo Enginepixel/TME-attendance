@@ -32,7 +32,7 @@
               700: '#0f766e',
               800: '#115e59',
               900: '#064e3b',
-              dark: '#0a3d2e',
+              dark: '#083328',
               surface: '#f4f7f5'
             }
           }
@@ -70,429 +70,520 @@
       border: 1px solid #fcd34d;
     }
     .badge-pending {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
+      background-color: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-emerald-200">
 
-  <!-- TOP STATUS BAR / TOAST -->
+  <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed top-4 right-4 z-50 transform -translate-y-16 opacity-0 transition-all duration-300 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center space-x-2 text-xs sm:text-sm pointer-events-none">
     <i data-lucide="info" class="w-4 h-4 text-emerald-400"></i>
     <span id="toastMsg">Action completed</span>
   </div>
 
-  <!-- NAVIGATION HEADER -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-      <!-- NSTI Logo & Subtitles -->
-      <div class="flex items-center space-x-3 sm:space-x-4">
-        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-nsti-dark rounded-xl flex items-center justify-center text-white font-extrabold text-sm sm:text-base tracking-wider shadow-sm flex-shrink-0">
+  <!-- ======================================================== -->
+  <!-- 1. LANDING & AUTH SCREEN (VISIBLE FIRST TO ALL VISITORS) -->
+  <!-- ======================================================== -->
+  <section id="authSection" class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-emerald-950 via-nsti-dark to-teal-950 relative overflow-hidden">
+    <!-- Subtle Background Glows -->
+    <div class="absolute top-10 left-10 w-72 h-72 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 right-10 w-80 h-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
+
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 sm:p-8 relative z-10">
+      
+      <!-- Logo & Header -->
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-nsti-dark text-white rounded-2xl flex items-center justify-center font-extrabold text-lg mx-auto shadow-md mb-3">
           NSTI
         </div>
+        <span class="text-[10px] font-bold tracking-widest text-gray-400 uppercase block">National Skill Training Institute</span>
+        <h1 class="text-2xl font-extrabold text-gray-900 leading-tight">NSTI Ramanthapur</h1>
+        <p class="text-xs font-semibold text-emerald-800 mt-0.5">TME · Technician Medical Electronics</p>
+      </div>
+
+      <!-- Auth Mode Toggle -->
+      <div class="flex bg-gray-100 p-1 rounded-2xl mb-6">
+        <button id="authTabStudent" onclick="switchAuthTab('student')" class="w-1/2 py-2.5 rounded-xl text-xs font-bold transition bg-white text-emerald-950 shadow-xs flex items-center justify-center space-x-1.5">
+          <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-emerald-700"></i>
+          <span>Student Portal</span>
+        </button>
+        <button id="authTabAdmin" onclick="switchAuthTab('admin')" class="w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition flex items-center justify-center space-x-1.5">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span>Admin Login</span>
+        </button>
+      </div>
+
+      <!-- STUDENT AUTH FORM -->
+      <div id="studentAuthBox" class="space-y-4">
+        
+        <!-- Toggle: Sign in vs Register -->
+        <div class="flex items-center justify-between border-b border-gray-100 pb-2.5 mb-2">
+          <span id="studentFormSubheading" class="text-xs font-bold text-gray-500 uppercase tracking-wider">Sign In to Your Account</span>
+          <button id="toggleStudentModeBtn" onclick="toggleStudentRegisterMode()" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold transition underline">
+            Need an account? Register
+          </button>
+        </div>
+
+        <!-- Registration-Only Name Field -->
+        <div id="regNameField" class="hidden">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name</label>
+          <input id="inputStudentName" type="text" placeholder="Enter student full name" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700" />
+        </div>
+
+        <!-- Student ID -->
         <div>
-          <span class="text-[10px] sm:text-xs font-semibold tracking-wider text-gray-500 uppercase block">National Skill Training Institute</span>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-base sm:text-xl font-bold text-gray-900 leading-tight">NSTI Ramanthapur</h1>
-            <span class="text-gray-300 font-medium">·</span>
-            <span class="text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">TME</span>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Student ID / Roll No</label>
+          <input id="inputStudentID" type="text" placeholder="Enter your student roll number" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700" />
+        </div>
+
+        <!-- Mobile Number -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Mobile Number</label>
+          <input id="inputStudentMobile" type="tel" placeholder="10-digit registered mobile number" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700" />
+        </div>
+
+        <!-- Registration-Only Year Selection -->
+        <div id="regYearField" class="hidden">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Select Year / Batch</label>
+          <select id="inputStudentYear" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white">
+            <option value="1">1st Year Batch (Emerald Tag)</option>
+            <option value="2">2nd Year Batch (Amber Tag)</option>
+          </select>
+        </div>
+
+        <button id="studentSubmitBtn" onclick="handleStudentAuth()" class="w-full py-3 bg-nsti-dark hover:bg-emerald-900 text-white font-bold rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center space-x-2">
+          <span>Sign In to Portal</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+
+        <p class="text-[11px] text-gray-400 text-center leading-relaxed">
+          * Attendance tracking begins strictly from <strong>10 August 2026</strong>. Student ID and phone number remain confidential.
+        </p>
+      </div>
+
+      <!-- ADMIN AUTH FORM -->
+      <div id="adminAuthBox" class="hidden space-y-4">
+        <div class="border-b border-gray-100 pb-2 mb-2">
+          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Authorized Officer Login</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Admin ID</label>
+          <input id="inputAdminID" type="text" value="ADMIN01" placeholder="Admin username" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Mobile / Passkey</label>
+          <input id="inputAdminPass" type="password" value="9999999999" placeholder="Enter passkey / mobile" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700" />
+          <span class="text-[11px] text-emerald-800 font-medium mt-1 block">Default: ID: <strong>ADMIN01</strong> / Pass: <strong>9999999999</strong></span>
+        </div>
+
+        <button onclick="handleAdminAuth()" class="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center space-x-2">
+          <span>Enter Admin Console</span>
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- 2. MAIN APP DASHBOARD (SHOWN ONLY AFTER AUTHENTICATION) -->
+  <!-- ======================================================== -->
+  <div id="appContainer" class="hidden flex-col min-h-screen">
+    
+    <!-- NAVIGATION HEADER -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+        
+        <!-- Logo & Subtitle -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-nsti-dark rounded-xl flex items-center justify-center text-white font-extrabold text-sm sm:text-base tracking-wider shadow-xs flex-shrink-0">
+            NSTI
+          </div>
+          <div>
+            <span class="text-[10px] sm:text-xs font-semibold tracking-wider text-gray-500 uppercase block">National Skill Training Institute</span>
+            <div class="flex items-center space-x-2">
+              <h1 class="text-base sm:text-xl font-bold text-gray-900 leading-tight">NSTI Ramanthapur</h1>
+              <span class="text-gray-300 font-medium">·</span>
+              <span class="text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">TME</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- User Role Indicator & Switch/Auth -->
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <div id="userRoleBadge" class="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
-          Student
-        </div>
-        <button id="authBtn" onclick="openLoginModal()" class="flex items-center space-x-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition">
-          <i data-lucide="user" class="w-4 h-4"></i>
-          <span id="authBtnLabel">Sign in / Switch</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full flex-grow">
-
-    <!-- HERO GREEN BANNER -->
-    <div id="heroBanner" class="relative rounded-2xl overflow-hidden mb-6 text-white shadow bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 p-6 sm:p-8">
-      <div class="relative z-10 max-w-3xl">
-        <span class="inline-block text-[11px] font-bold tracking-widest text-emerald-300 uppercase mb-1">Technician Medical Electronics</span>
-        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">TME Attendance Portal</h2>
-        <p class="text-emerald-100 text-xs sm:text-sm leading-relaxed mb-5">
-          Live attendance tracking starting from <strong class="text-white underline decoration-emerald-400">10 August 2026</strong>. Weekdays are non-holidays; weekends default to holidays. Maintain 80% to be eligible for examinations.
-        </p>
-
-        <!-- Fast Role Switcher Buttons for Demo/Testing -->
-        <div class="flex flex-wrap gap-2.5 text-xs font-semibold">
-          <button onclick="quickSelectStudent('101')" class="bg-white text-emerald-950 px-3.5 py-2 rounded-xl hover:bg-emerald-50 transition flex items-center space-x-1.5 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-            <span>Aarav (1st Year)</span>
-          </button>
-          <button onclick="quickSelectStudent('15122356')" class="bg-amber-100 text-amber-950 px-3.5 py-2 rounded-xl hover:bg-amber-200 transition flex items-center space-x-1.5 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-amber-600"></span>
-            <span>Yestheri (2nd Year)</span>
-          </button>
-          <button onclick="quickSelectStudent('301')" class="bg-rose-100 text-rose-950 px-3.5 py-2 rounded-xl hover:bg-rose-200 transition flex items-center space-x-1.5 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-rose-600"></span>
-            <span>Kiran (Pending)</span>
-          </button>
-          <button onclick="quickSelectAdmin()" class="bg-emerald-800 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 border border-emerald-600">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-300"></i>
-            <span>Admin Portal</span>
+        <!-- Role Badge & Logout Button -->
+        <div class="flex items-center space-x-2.5 sm:space-x-3">
+          <div id="headerRoleBadge" class="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+            Student
+          </div>
+          <button onclick="handleSignOut()" class="flex items-center space-x-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition" title="Sign out of current account">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>Sign out</span>
           </button>
         </div>
-      </div>
-      <!-- Background subtle radial glow -->
-      <div class="absolute -right-8 -bottom-8 w-60 h-60 rounded-full bg-emerald-500/10 pointer-events-none blur-xl"></div>
-    </div>
 
-    <!-- MAIN TABS NAVIGATION -->
-    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <div class="flex items-center bg-gray-200/90 p-1 rounded-2xl flex-wrap gap-1">
-        <button id="tabMyAttendance" onclick="switchTab('myAttendance')" class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-white text-emerald-950 shadow-sm flex items-center space-x-2">
-          <i data-lucide="calendar" class="w-4 h-4 text-emerald-700"></i>
-          <span>My attendance</span>
-        </button>
-        <button id="tabClass" onclick="switchTab('class')" class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 transition flex items-center space-x-2">
-          <i data-lucide="users" class="w-4 h-4"></i>
-          <span>Class view</span>
-        </button>
-        <button id="tabAdmin" onclick="switchTab('admin')" class="hidden px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 transition flex items-center space-x-2">
-          <i data-lucide="shield" class="w-4 h-4 text-emerald-700"></i>
-          <span>Admin Inbox</span>
-          <span id="navPendingCountBadge" class="ml-1 px-2 py-0.5 bg-rose-500 text-white text-[10px] font-extrabold rounded-full">0</span>
-        </button>
+      </div>
+    </header>
+
+    <!-- MAIN BODY CONTENT -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full flex-grow">
+
+      <!-- BANNER -->
+      <div class="relative rounded-2xl overflow-hidden mb-6 text-white shadow bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 p-6 sm:p-7">
+        <div class="relative z-10 max-w-2xl">
+          <span class="inline-block text-[11px] font-bold tracking-widest text-emerald-300 uppercase mb-1">Technician Medical Electronics</span>
+          <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight mb-1" id="bannerGreeting">Welcome</h2>
+          <p class="text-emerald-100 text-xs sm:text-sm leading-relaxed">
+            Attendance starts strictly from <strong class="text-white underline decoration-emerald-400">10 August 2026</strong>. Weekdays are school days; weekends default to holidays. Maintain 80% to be eligible for exams.
+          </p>
+        </div>
       </div>
 
-      <!-- Realtime connection status & current cohort badge -->
-      <div class="flex items-center space-x-2 text-xs font-semibold bg-white border border-gray-200 px-3 py-1.5 rounded-xl shadow-xs">
-        <span id="realtimeDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span id="realtimeStatusText" class="text-gray-700">Cloud Connected</span>
-      </div>
-    </div>
+      <!-- TABS CONTROLLER -->
+      <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div class="flex items-center bg-gray-200/90 p-1 rounded-2xl flex-wrap gap-1">
+          <button id="tabMyAttendance" onclick="switchMainTab('myAttendance')" class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-white text-emerald-950 shadow-xs flex items-center space-x-2">
+            <i data-lucide="calendar" class="w-4 h-4 text-emerald-700"></i>
+            <span>My attendance</span>
+          </button>
+          
+          <button id="tabClass" onclick="switchMainTab('class')" class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 transition flex items-center space-x-2">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Class view</span>
+          </button>
 
-    <!-- ========================================== -->
-    <!-- VIEW 1: MY ATTENDANCE                      -->
-    <!-- ========================================== -->
-    <div id="viewMyAttendance" class="space-y-6">
-      <!-- Top Overview Cards -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Admin Only Inbox Tab -->
+          <button id="tabAdmin" onclick="switchMainTab('admin')" class="hidden px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 transition flex items-center space-x-2">
+            <i data-lucide="inbox" class="w-4 h-4 text-emerald-700"></i>
+            <span>Admin Inbox</span>
+            <span id="navPendingPill" class="ml-1 px-2 py-0.5 bg-rose-500 text-white text-[10px] font-extrabold rounded-full">0</span>
+          </button>
+        </div>
+
+        <!-- Sync Indicator -->
+        <div class="flex items-center space-x-2 text-xs font-semibold bg-white border border-gray-200 px-3 py-1.5 rounded-xl shadow-xs">
+          <span id="syncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="syncStatusText" class="text-gray-700">Cloud Online</span>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW A: MY ATTENDANCE                      -->
+      <!-- ========================================== -->
+      <div id="viewMyAttendance" class="space-y-6">
         
-        <!-- Student Info & Totals -->
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200/90 p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">Student Attendance Card</span>
-            <div class="flex items-baseline justify-between flex-wrap gap-2">
-              <h2 id="currentStudentName" class="text-2xl sm:text-3xl font-extrabold text-gray-900">Aarav Kumar</h2>
-              <div class="flex items-center space-x-2" id="currentStudentBadges">
-                <!-- Year & status tags populated by JS -->
+        <!-- Header Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Student Card -->
+          <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200/90 p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">Personal Attendance Card</span>
+              <div class="flex items-baseline justify-between flex-wrap gap-2">
+                <h2 id="activeStudentName" class="text-2xl sm:text-3xl font-extrabold text-gray-900">Student Name</h2>
+                <div class="flex items-center space-x-2" id="activeStudentBadges">
+                  <!-- Tag elements populated by JS -->
+                </div>
+              </div>
+              <p class="text-xs sm:text-sm text-gray-500 mt-2">
+                Attendance calculation begins on <strong class="text-gray-800 font-semibold">10 August 2026</strong>. Saturdays and Sundays are holidays by default and <span class="text-emerald-700 font-medium">never deduct your attendance percentage</span>.
+              </p>
+            </div>
+
+            <!-- Present / Absent / Counted Counters -->
+            <div class="grid grid-cols-3 gap-3 sm:gap-4 mt-6">
+              <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 sm:p-4 text-center">
+                <div id="statPresent" class="text-2xl sm:text-3xl font-extrabold text-emerald-700">0</div>
+                <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase mt-0.5">Present</div>
+              </div>
+              <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 sm:p-4 text-center">
+                <div id="statAbsent" class="text-2xl sm:text-3xl font-extrabold text-rose-600">0</div>
+                <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase mt-0.5">Absent</div>
+              </div>
+              <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 sm:p-4 text-center">
+                <div id="statCounted" class="text-2xl sm:text-3xl font-extrabold text-gray-800">0</div>
+                <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase mt-0.5">Counted days</div>
               </div>
             </div>
-            <p class="text-xs sm:text-sm text-gray-500 mt-2">
-              Attendance calculations start strictly from <strong class="text-gray-800 font-semibold">10 August 2026</strong>. Saturdays and Sundays are holidays by default and <span class="text-emerald-700 font-medium">never deduct your attendance percentage</span>.
+          </div>
+
+          <!-- 80% Target Radial Meter -->
+          <div class="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-xs flex flex-col items-center justify-center text-center">
+            <div class="relative w-36 h-36 flex items-center justify-center mb-3">
+              <svg class="w-full h-full radial-gauge" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" stroke="#e2e8f0" stroke-width="10" fill="transparent" />
+                <circle id="radialCircle" cx="50" cy="50" r="40" stroke="#0f766e" stroke-width="10" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="0" class="transition-all duration-700 ease-out" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="statPercentage" class="text-3xl font-extrabold text-gray-900">100%</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attendance</span>
+              </div>
+            </div>
+
+            <!-- Target Advice Badge -->
+            <div id="targetPill" class="mt-1 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center space-x-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-700"></i>
+              <span id="targetStatusText">On track · Target 80%</span>
+            </div>
+            <p id="targetSubText" class="text-xs text-gray-500 mt-2 max-w-xs leading-tight">
+              Can miss 0 more classes while staying above 80%.
             </p>
           </div>
 
-          <!-- Present / Absent / Counted Counters -->
-          <div class="grid grid-cols-3 gap-3 sm:gap-4 mt-6">
-            <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 sm:p-4 text-center">
-              <div id="statPresentCount" class="text-2xl sm:text-3xl font-extrabold text-emerald-700">0</div>
-              <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase mt-0.5">Present</div>
-            </div>
-            <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 sm:p-4 text-center">
-              <div id="statAbsentCount" class="text-2xl sm:text-3xl font-extrabold text-rose-600">0</div>
-              <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase mt-0.5">Absent</div>
-            </div>
-            <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 sm:p-4 text-center">
-              <div id="statCountedTotal" class="text-2xl sm:text-3xl font-extrabold text-gray-800">0</div>
-              <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase mt-0.5">Counted days</div>
-            </div>
-          </div>
         </div>
 
-        <!-- 80% Target Gauge & Advice -->
-        <div class="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-sm flex flex-col items-center justify-center text-center">
-          <div class="relative w-36 h-36 flex items-center justify-center mb-3">
-            <svg class="w-full h-full radial-gauge" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" stroke="#e2e8f0" stroke-width="10" fill="transparent" />
-              <circle id="radialMeter" cx="50" cy="50" r="40" stroke="#0f766e" stroke-width="10" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="0" class="transition-all duration-700 ease-out" />
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span id="statPercentageText" class="text-3xl font-extrabold text-gray-900">100%</span>
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attendance</span>
+        <!-- CALENDAR INTERFACE -->
+        <div class="bg-white rounded-2xl border border-gray-200/90 p-5 sm:p-7 shadow-xs">
+          <!-- Calendar Title & Controls -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Attendance calendar</h3>
+              <p class="text-xs sm:text-sm text-gray-500">Tap any date from August 10, 2026 onwards to mark Present, Absent, Holiday, or Clear.</p>
+            </div>
+
+            <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+              <button id="btnMultiSelect" onclick="toggleMultiSelect()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition flex items-center space-x-1.5">
+                <i data-lucide="check-square" class="w-4 h-4 text-emerald-700"></i>
+                <span id="multiSelectLabel">Select multiple</span>
+              </button>
             </div>
           </div>
 
-          <!-- Target advice indicator -->
-          <div id="targetAdviceBadge" class="mt-1 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center space-x-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300">
-            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-700"></i>
-            <span id="targetAdviceText">On track · Target: 80%</span>
+          <!-- Month Selector -->
+          <div class="flex items-center justify-between mb-4">
+            <button onclick="changeMonth(-1)" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition text-gray-600">
+              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="text-center">
+              <h4 id="calendarTitle" class="text-base sm:text-lg font-bold text-gray-900">August 2026</h4>
+              <span class="text-xs text-gray-400 font-medium">Session 2026-27</span>
+            </div>
+
+            <button onclick="changeMonth(1)" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition text-gray-600">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
           </div>
-          <p id="targetSubAdviceText" class="text-xs text-gray-500 mt-2 max-w-xs leading-tight">
-            Can miss 0 more classes while staying above 80%.
-          </p>
+
+          <!-- Batch Action Floating Strip -->
+          <div id="batchActionStrip" class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between flex-wrap gap-2 text-xs sm:text-sm">
+            <div class="flex items-center space-x-2 text-emerald-950 font-medium">
+              <span id="batchCount" class="font-bold">0</span> dates selected
+            </div>
+            <div class="flex items-center space-x-1.5">
+              <button onclick="applyBatchAction('present')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold text-xs transition">Present</button>
+              <button onclick="applyBatchAction('absent')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold text-xs transition">Absent</button>
+              <button onclick="applyBatchAction('holiday')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold text-xs transition">Holiday</button>
+              <button onclick="applyBatchAction('clear')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold text-xs transition">Clear</button>
+            </div>
+          </div>
+
+          <!-- Days Header -->
+          <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+          </div>
+
+          <!-- Calendar Grid Cells -->
+          <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Legend -->
+          <div class="flex flex-wrap items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-100 text-xs text-gray-600">
+            <div class="flex items-center space-x-4 flex-wrap gap-y-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="w-3.5 h-3.5 rounded bg-emerald-600 inline-block"></span>
+                <span>Present</span>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span class="w-3.5 h-3.5 rounded bg-rose-500 inline-block"></span>
+                <span>Absent</span>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span class="w-3.5 h-3.5 rounded bg-slate-300 inline-block"></span>
+                <span>Holiday / Weekend</span>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span class="w-3.5 h-3.5 rounded border border-gray-300 bg-white inline-block"></span>
+                <span>Clear / Regular Weekday</span>
+              </div>
+            </div>
+            <div class="text-gray-400 italic text-[11px]">
+              * August 10, 2026 onwards is fully editable. Weekday Mondays are regular school days.
+            </div>
+          </div>
+
         </div>
 
       </div>
 
-      <!-- CALENDAR SECTION -->
-      <div class="bg-white rounded-2xl border border-gray-200/90 p-5 sm:p-7 shadow-sm">
-        <!-- Calendar Header -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
-          <div>
-            <h3 class="text-lg font-bold text-gray-900">Attendance calendar</h3>
-            <p class="text-xs sm:text-sm text-gray-500">Tap any date from August 10, 2026 onwards to mark Present, Absent, Holiday, or Clear.</p>
+      <!-- ========================================== -->
+      <!-- VIEW B: CLASS SHARED DIRECTORY             -->
+      <!-- ========================================== -->
+      <div id="viewClass" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-xs">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800 block">Class Cohort Directory</span>
+              <h2 id="classCohortHeading" class="text-2xl font-extrabold text-gray-900">Class Attendance</h2>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span id="classCohortPill" class="text-xs font-bold px-3 py-1 rounded-full badge-year1">
+                1st Year Cohort
+              </span>
+              <span id="classCohortCount" class="bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full border border-gray-200">
+                0 students
+              </span>
+            </div>
           </div>
 
-          <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
-            <button id="multiSelectToggleBtn" onclick="toggleMultiSelect()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition flex items-center space-x-1.5">
-              <i data-lucide="check-square" class="w-4 h-4 text-emerald-700"></i>
-              <span id="multiSelectLabel">Select multiple</span>
-            </button>
-            <button onclick="openPhotoScanModal()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center space-x-1.5">
-              <i data-lucide="camera" class="w-4 h-4 text-emerald-700"></i>
-              <span>Update with photo</span>
-            </button>
+          <p class="text-xs sm:text-sm text-gray-500 mb-6">
+            Only student names, progress percentages, and target goals are shared. Roll IDs and phone numbers are strictly protected.
+          </p>
+
+          <!-- PENDING LOCKOUT BANNER -->
+          <div id="classPendingNotice" class="hidden p-6 sm:p-8 bg-amber-50 border border-amber-200 rounded-2xl text-center">
+            <div class="w-12 h-12 bg-amber-100 text-amber-900 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <i data-lucide="clock" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-base font-bold text-amber-900">Registration Pending Administrator Approval</h3>
+            <p class="text-xs sm:text-sm text-amber-800 max-w-md mx-auto mt-1 leading-relaxed">
+              Your profile is currently waiting in the Admin Inbox. You can mark and track your personal calendar right now, but classmates' attendance will unlock once the administrator approves your account.
+            </p>
+          </div>
+
+          <!-- Classmates List Container -->
+          <div id="classListContainer" class="space-y-3">
+            <!-- Cards populated by JS -->
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW C: ADMIN CONSOLE & INBOX              -->
+      <!-- ========================================== -->
+      <div id="viewAdmin" class="hidden space-y-6">
+        
+        <!-- Admin Master Card -->
+        <div class="bg-nsti-dark text-white rounded-2xl p-6 shadow">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-900">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-emerald-300 uppercase">Administrator Portal</span>
+              <h2 class="text-2xl sm:text-3xl font-extrabold mt-0.5">TME Attendance & Cohort Manager</h2>
+              <p class="text-xs sm:text-sm text-emerald-100 mt-1">Approve pending students, assign 1st or 2nd Year tags, and inspect student calendars.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="refreshData()" class="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold border border-emerald-600 transition flex items-center space-x-1.5">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Refresh Live</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Admin Metric Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+            <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
+              <div class="text-xs text-emerald-200">Pending Requests</div>
+              <div id="adminMetricPending" class="text-2xl font-bold mt-1 text-amber-300">0</div>
+            </div>
+            <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
+              <div class="text-xs text-emerald-200">1st Year Students</div>
+              <div id="adminMetricY1" class="text-2xl font-bold mt-1 text-emerald-300">0</div>
+            </div>
+            <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
+              <div class="text-xs text-emerald-200">2nd Year Students</div>
+              <div id="adminMetricY2" class="text-2xl font-bold mt-1 text-amber-300">0</div>
+            </div>
+            <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
+              <div class="text-xs text-emerald-200">Below 80% Target</div>
+              <div id="adminMetricBelow" class="text-2xl font-bold mt-1 text-rose-300">0</div>
+            </div>
           </div>
         </div>
 
-        <!-- Month Navigation -->
-        <div class="flex items-center justify-between mb-4">
-          <button onclick="navigateMonth(-1)" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition text-gray-600">
-            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        <!-- Sub Tabs for Admin -->
+        <div class="flex items-center space-x-3 border-b border-gray-200 pb-2">
+          <button id="adminSubInboxBtn" onclick="switchAdminSubTab('inbox')" class="px-4 py-2 font-bold text-sm rounded-xl transition bg-emerald-900 text-white flex items-center space-x-2">
+            <i data-lucide="inbox" class="w-4 h-4"></i>
+            <span>Pending Inbox</span>
+            <span id="adminInboxBadge" class="px-2 py-0.5 bg-rose-500 text-white text-xs rounded-full font-bold ml-1">0</span>
           </button>
           
-          <div class="text-center">
-            <h4 id="calendarMonthTitle" class="text-base sm:text-lg font-bold text-gray-900">August 2026</h4>
-            <span class="text-xs text-gray-400 font-medium">Session 2026-27</span>
-          </div>
-
-          <button onclick="navigateMonth(1)" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition text-gray-600">
-            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          <button id="adminSubDirectoryBtn" onclick="switchAdminSubTab('directory')" class="px-4 py-2 font-bold text-sm rounded-xl transition text-gray-600 hover:text-gray-900 flex items-center space-x-2">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Approved Students Directory</span>
           </button>
         </div>
 
-        <!-- Multi-select Bulk Action Bar -->
-        <div id="bulkActionBar" class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between flex-wrap gap-2 text-xs sm:text-sm">
-          <div class="flex items-center space-x-2 text-emerald-950 font-medium">
-            <span id="selectedDaysCount" class="font-bold">0</span> dates selected
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="applyBatchStatus('present')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold text-xs transition">Present</button>
-            <button onclick="applyBatchStatus('absent')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold text-xs transition">Absent</button>
-            <button onclick="applyBatchStatus('holiday')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold text-xs transition">Holiday</button>
-            <button onclick="applyBatchStatus('clear')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold text-xs transition">Clear</button>
-          </div>
-        </div>
+        <!-- SUBVIEW 1: INBOX -->
+        <div id="adminSubInboxSection" class="space-y-4">
+          <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+            <h3 class="text-base font-bold text-gray-900 mb-1">Registration Approval Inbox</h3>
+            <p class="text-xs text-gray-500 mb-4">When students sign up on the login page, their requests arrive here. Assign them to 1st Year or 2nd Year to approve their class access.</p>
 
-        <!-- Calendar Day of Week Titles -->
-        <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-          <div>Sun</div>
-          <div>Mon</div>
-          <div>Tue</div>
-          <div>Wed</div>
-          <div>Thu</div>
-          <div>Fri</div>
-          <div>Sat</div>
-        </div>
-
-        <!-- Days Grid -->
-        <div id="calendarDaysGrid" class="grid grid-cols-7 gap-1 sm:gap-2">
-          <!-- Calendar cells populated by JS -->
-        </div>
-
-        <!-- Legend -->
-        <div class="flex flex-wrap items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-100 text-xs text-gray-600">
-          <div class="flex items-center space-x-4 flex-wrap gap-y-2">
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-emerald-600 inline-block"></span>
-              <span>Present</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-rose-500 inline-block"></span>
-              <span>Absent</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-slate-300 inline-block"></span>
-              <span>Holiday / Weekend</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3.5 h-3.5 rounded border border-gray-300 bg-white inline-block"></span>
-              <span>Clear / Editable</span>
+            <div id="adminPendingContainer" class="space-y-3">
+              <!-- Dynamically populated -->
             </div>
           </div>
-          <div class="text-gray-400 italic text-[11px]">
-            * August 10, 2026 onward is fully editable. Weekdays are not automatic holidays.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- VIEW 2: CLASS SHARED ATTENDANCE VIEW       -->
-    <!-- ========================================== -->
-    <div id="viewClass" class="hidden space-y-6">
-      <div class="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-          <div>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800 block">Class Cohort Directory</span>
-            <h2 id="classCohortHeader" class="text-2xl font-extrabold text-gray-900">TME · Class Attendance</h2>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span id="classCohortPill" class="text-xs font-bold px-3 py-1 rounded-full badge-year1">
-              1st Year Cohort
-            </span>
-            <span id="classCohortCount" class="bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full border border-gray-200">
-              0 students
-            </span>
-          </div>
         </div>
 
-        <p class="text-xs sm:text-sm text-gray-500 mb-6">
-          Only names, attendance percentages, and target goals are visible here. Student roll numbers and phone numbers are kept completely confidential.
-        </p>
-
-        <!-- PENDING APPROVAL LOCKOUT BANNER -->
-        <div id="classPendingLockout" class="hidden p-6 bg-amber-50 border border-amber-200 rounded-2xl text-center">
-          <div class="w-12 h-12 bg-amber-100 text-amber-900 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <i data-lucide="clock" class="w-6 h-6"></i>
-          </div>
-          <h3 class="text-base font-bold text-amber-900">Registration Pending Administrator Approval</h3>
-          <p class="text-xs sm:text-sm text-amber-800 max-w-md mx-auto mt-1 leading-relaxed">
-            Your profile is currently waiting in the Admin Inbox for batch verification. You can mark and manage your personal attendance calendar, but you cannot view classmates until the administrator approves your account.
-          </p>
-        </div>
-
-        <!-- Classmates List Container -->
-        <div id="classListContainer" class="space-y-3">
-          <!-- Class cards populated by JS -->
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- VIEW 3: ADMIN PORTAL & INBOX               -->
-    <!-- ========================================== -->
-    <div id="viewAdmin" class="hidden space-y-6">
-      <!-- Admin Top Card -->
-      <div class="bg-nsti-dark text-white rounded-2xl p-6 shadow">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-900">
-          <div>
-            <span class="text-xs font-bold tracking-wider text-emerald-300 uppercase">Master Admin Dashboard</span>
-            <h2 class="text-2xl sm:text-3xl font-extrabold mt-0.5">TME Attendance & Cohort Manager</h2>
-            <p class="text-xs sm:text-sm text-emerald-100 mt-1">Approve pending students, assign 1st/2nd Year batches, and manage any student calendar.</p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="openAddStudentModal()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold rounded-xl text-xs sm:text-sm transition flex items-center space-x-1.5 shadow">
-              <i data-lucide="user-plus" class="w-4 h-4"></i>
-              <span>Add Student</span>
-            </button>
-            <button onclick="resetDemoData()" class="px-3.5 py-2 bg-emerald-900/80 hover:bg-emerald-800 text-white rounded-xl text-xs font-medium border border-emerald-700 transition">
-              Reset Demo
-            </button>
-          </div>
-        </div>
-
-        <!-- Metrics -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-          <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
-            <div class="text-xs text-emerald-200">Pending Approvals</div>
-            <div id="adminStatPending" class="text-2xl font-bold mt-1 text-amber-300">0</div>
-          </div>
-          <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
-            <div class="text-xs text-emerald-200">1st Year Students</div>
-            <div id="adminStatY1" class="text-2xl font-bold mt-1 text-emerald-300">0</div>
-          </div>
-          <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
-            <div class="text-xs text-emerald-200">2nd Year Students</div>
-            <div id="adminStatY2" class="text-2xl font-bold mt-1 text-amber-300">0</div>
-          </div>
-          <div class="bg-emerald-900/50 border border-emerald-700/50 rounded-xl p-3">
-            <div class="text-xs text-emerald-200">Below 80% Target</div>
-            <div id="adminStatBelow" class="text-2xl font-bold mt-1 text-rose-300">0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Admin Sub Tabs: Inbox vs All Students -->
-      <div class="flex items-center space-x-3 border-b border-gray-200 pb-2">
-        <button id="adminSubInboxBtn" onclick="switchAdminSubView('inbox')" class="px-4 py-2 font-bold text-sm rounded-xl transition bg-emerald-900 text-white flex items-center space-x-2">
-          <i data-lucide="inbox" class="w-4 h-4"></i>
-          <span>Approval Inbox</span>
-          <span id="adminPendingBadgePill" class="px-2 py-0.5 bg-rose-500 text-white text-xs rounded-full font-bold ml-1">0</span>
-        </button>
-        <button id="adminSubStudentsBtn" onclick="switchAdminSubView('students')" class="px-4 py-2 font-bold text-sm rounded-xl transition text-gray-600 hover:text-gray-900 flex items-center space-x-2">
-          <i data-lucide="users" class="w-4 h-4"></i>
-          <span>Student Directory & Calendars</span>
-        </button>
-      </div>
-
-      <!-- SUBVIEW A: PENDING APPROVALS INBOX -->
-      <div id="adminInboxView" class="space-y-4">
-        <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
-          <h3 class="text-base font-bold text-gray-900 mb-1">Pending Student Registration Requests</h3>
-          <p class="text-xs text-gray-500 mb-4">Assign new student requests to 1st Year or 2nd Year cohort. Once approved, they can view their classmates.</p>
-
-          <div id="adminPendingListContainer" class="space-y-3">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </div>
-
-      <!-- SUBVIEW B: FULL STUDENT DIRECTORY -->
-      <div id="adminStudentsView" class="hidden space-y-4">
-        <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-gray-500 uppercase">Filter:</span>
-            <div class="flex bg-gray-100 p-1 rounded-xl">
-              <button id="filterY1Btn" onclick="setAdminCohortFilter('1')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs">
-                1st Year Cohort
-              </button>
-              <button id="filterY2Btn" onclick="setAdminCohortFilter('2')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-gray-900 transition">
-                2nd Year Cohort
-              </button>
-              <button id="filterAllBtn" onclick="setAdminCohortFilter('all')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-gray-900 transition">
-                All Students
-              </button>
+        <!-- SUBVIEW 2: DIRECTORY -->
+        <div id="adminSubDirectorySection" class="hidden space-y-4">
+          <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-gray-500 uppercase">Batch Filter:</span>
+              <div class="flex bg-gray-100 p-1 rounded-xl">
+                <button id="adminFilterAll" onclick="setAdminFilter('all')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs">All</button>
+                <button id="adminFilterY1" onclick="setAdminFilter('1')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-gray-900 transition">1st Year</button>
+                <button id="adminFilterY2" onclick="setAdminFilter('2')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-gray-900 transition">2nd Year</button>
+              </div>
+            </div>
+            <div class="text-xs text-gray-500">
+              Select any student to review or update their attendance calendar.
             </div>
           </div>
-          <div class="text-xs text-gray-500">
-            Click 'Edit Calendar' to mark or correct dates for any student.
+
+          <div id="adminApprovedContainer" class="space-y-3">
+            <!-- Directory cards -->
           </div>
         </div>
 
-        <div id="adminStudentDirectoryContainer" class="space-y-3">
-          <!-- Populated by JS -->
-        </div>
       </div>
-    </div>
 
-  </main>
+    </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-gray-200 py-6 mt-12 text-center text-xs text-gray-500">
-    <div class="max-w-6xl mx-auto px-4">
-      <p class="font-semibold text-gray-700">NSTI Ramanthapur · Directorate General of Training (DGT)</p>
-      <p class="mt-1">Technician Medical Electronics Attendance System · Session 2026-27</p>
-    </div>
-  </footer>
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-200 py-6 text-center text-xs text-gray-500">
+      <div class="max-w-6xl mx-auto px-4">
+        <p class="font-semibold text-gray-700">NSTI Ramanthapur · Directorate General of Training (DGT)</p>
+        <p class="mt-1">Technician Medical Electronics Attendance System · Session 2026-27</p>
+      </div>
+    </footer>
+
+  </div>
 
   <!-- ========================================== -->
   <!-- MODALS                                     -->
   <!-- ========================================== -->
 
-  <!-- MODAL: DATE ACTION POPOVER -->
+  <!-- DATE EDIT POPOVER MODAL -->
   <div id="datePopoverModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl border border-gray-100">
       <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
         <div>
-          <h4 id="popoverDateTitle" class="text-base font-bold text-gray-900">10 August 2026</h4>
-          <span id="popoverStudentSubtitle" class="text-xs text-gray-500">Aarav Kumar</span>
+          <h4 id="popoverDateHeading" class="text-base font-bold text-gray-900">10 August 2026</h4>
+          <span id="popoverStudentHeading" class="text-xs text-gray-500">Student Profile</span>
         </div>
         <button onclick="closeDatePopover()" class="text-gray-400 hover:text-gray-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -500,7 +591,7 @@
       </div>
 
       <div class="space-y-2">
-        <button onclick="setAttendanceAction('present')" class="w-full text-left px-4 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-bold text-sm flex items-center justify-between transition">
+        <button onclick="saveSelectedDateStatus('present')" class="w-full text-left px-4 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-bold text-sm flex items-center justify-between transition">
           <div class="flex items-center space-x-2.5">
             <span class="w-3.5 h-3.5 rounded-full bg-emerald-600"></span>
             <span>Present</span>
@@ -508,7 +599,7 @@
           <span class="text-xs text-emerald-700 font-medium">Attended</span>
         </button>
 
-        <button onclick="setAttendanceAction('absent')" class="w-full text-left px-4 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-900 font-bold text-sm flex items-center justify-between transition">
+        <button onclick="saveSelectedDateStatus('absent')" class="w-full text-left px-4 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-900 font-bold text-sm flex items-center justify-between transition">
           <div class="flex items-center space-x-2.5">
             <span class="w-3.5 h-3.5 rounded-full bg-rose-600"></span>
             <span>Absent</span>
@@ -516,7 +607,7 @@
           <span class="text-xs text-rose-700 font-medium">Missed</span>
         </button>
 
-        <button onclick="setAttendanceAction('holiday')" class="w-full text-left px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold text-sm flex items-center justify-between transition">
+        <button onclick="saveSelectedDateStatus('holiday')" class="w-full text-left px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold text-sm flex items-center justify-between transition">
           <div class="flex items-center space-x-2.5">
             <span class="w-3.5 h-3.5 rounded-full bg-slate-500"></span>
             <span>Holiday</span>
@@ -524,7 +615,7 @@
           <span class="text-xs text-slate-600 font-medium">No % impact</span>
         </button>
 
-        <button onclick="setAttendanceAction('clear')" class="w-full text-left px-4 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-semibold text-sm flex items-center justify-between transition">
+        <button onclick="saveSelectedDateStatus('clear')" class="w-full text-left px-4 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-semibold text-sm flex items-center justify-between transition">
           <div class="flex items-center space-x-2.5">
             <i data-lucide="trash-2" class="w-4 h-4 text-gray-400"></i>
             <span>Clear status</span>
@@ -535,358 +626,365 @@
     </div>
   </div>
 
-  <!-- MODAL: LOGIN / REGISTER -->
-  <div id="loginModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl border border-gray-100 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
-      <button onclick="closeLoginModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-1">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
-
-      <div class="text-center mb-5">
-        <div class="w-12 h-12 bg-nsti-dark rounded-2xl flex items-center justify-center text-white font-bold text-lg mx-auto mb-2 shadow">
-          NSTI
-        </div>
-        <h3 class="text-lg font-bold text-gray-900">Sign in to NSTI TME</h3>
-        <p class="text-xs text-gray-500">Select an existing account or register new profile</p>
-      </div>
-
-      <!-- Role Tabs in Modal -->
-      <div class="flex bg-gray-100 p-1 rounded-2xl mb-4">
-        <button id="modalTabStudent" onclick="switchLoginModalRole('student')" class="w-1/2 py-2 rounded-xl text-xs font-bold transition bg-white text-emerald-950 shadow-xs">
-          Student
-        </button>
-        <button id="modalTabAdmin" onclick="switchLoginModalRole('admin')" class="w-1/2 py-2 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition">
-          Admin
-        </button>
-      </div>
-
-      <!-- Student Section -->
-      <div id="modalStudentSection" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select Profile</label>
-          <select id="loginStudentSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white">
-            <!-- Dynamically populated -->
-          </select>
-        </div>
-
-        <button onclick="confirmStudentLogin()" class="w-full py-2.5 bg-nsti-dark hover:bg-emerald-900 text-white font-bold rounded-xl text-xs sm:text-sm transition shadow">
-          Sign In
-        </button>
-
-        <div class="relative flex py-2 items-center">
-          <div class="flex-grow border-t border-gray-200"></div>
-          <span class="flex-shrink mx-3 text-gray-400 text-[10px] uppercase font-bold tracking-wider">New Student Registration</span>
-          <div class="flex-grow border-t border-gray-200"></div>
-        </div>
-
-        <!-- Registration Form -->
-        <div class="space-y-2.5 bg-gray-50 p-3.5 rounded-2xl border border-gray-200">
-          <div>
-            <label class="block text-[11px] font-bold text-gray-700">Full Name</label>
-            <input id="regFullName" type="text" placeholder="e.g. Rakesh Kumar" class="w-full px-3 py-1.5 rounded-lg border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-600" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-gray-700">Student Roll / ID</label>
-            <input id="regStudentId" type="text" placeholder="e.g. 109" class="w-full px-3 py-1.5 rounded-lg border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-600" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-gray-700">Mobile Number</label>
-            <input id="regMobile" type="tel" placeholder="10-digit phone" class="w-full px-3 py-1.5 rounded-lg border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-600" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-gray-700">Requested Batch</label>
-            <select id="regCohort" class="w-full px-3 py-1.5 rounded-lg border border-gray-300 text-xs bg-white focus:ring-2 focus:ring-emerald-600">
-              <option value="1">1st Year Batch (2026-27)</option>
-              <option value="2">2nd Year Batch (2025-26)</option>
-            </select>
-          </div>
-          <button onclick="submitStudentRegistration()" class="w-full mt-2 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition shadow-xs">
-            Submit for Admin Approval
-          </button>
-        </div>
-      </div>
-
-      <!-- Admin Section -->
-      <div id="modalAdminSection" class="hidden space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Admin Passkey</label>
-          <input id="adminPasskeyInput" type="password" value="admin123" placeholder="Enter passkey" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" />
-          <span class="text-[11px] text-emerald-800 font-medium mt-1 block">Default passkey: <strong>admin123</strong></span>
-        </div>
-
-        <button onclick="confirmAdminLogin()" class="w-full py-2.5 bg-nsti-dark hover:bg-emerald-900 text-white font-bold rounded-xl text-sm transition shadow">
-          Sign In as Admin
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: ADD STUDENT DIRECT (ADMIN) -->
-  <div id="addStudentModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-100">
-      <div class="flex items-center justify-between mb-4">
-        <h4 class="text-base font-bold text-gray-900">Pre-Approve New Student</h4>
-        <button onclick="closeAddStudentModal()" class="text-gray-400 hover:text-gray-600 p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
-          <input id="newAdminStudentName" type="text" placeholder="e.g. Divya Sharma" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-600" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">Student Roll / ID</label>
-          <input id="newAdminStudentId" type="text" placeholder="e.g. 110" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-600" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">Batch Year</label>
-          <select id="newAdminStudentBatch" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-600 bg-white">
-            <option value="1">1st Year Batch (Emerald Tag)</option>
-            <option value="2">2nd Year Batch (Amber Tag)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="mt-5 flex justify-end space-x-2">
-        <button onclick="closeAddStudentModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-700">Cancel</button>
-        <button onclick="saveAdminStudentDirect()" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow">Save Student</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: PHOTO SCAN SIMULATOR -->
-  <div id="photoScanModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center space-x-2">
-          <i data-lucide="camera" class="w-5 h-5 text-emerald-700"></i>
-          <h4 class="text-base font-bold text-gray-900">Upload Portal Screenshot / Register</h4>
-        </div>
-        <button onclick="closePhotoScanModal()" class="text-gray-400 hover:text-gray-600 p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <p class="text-xs text-gray-600 mb-4">
-        Simulate OCR scanning of your attendance portal screenshot or attendance register sheet.
-      </p>
-
-      <div onclick="simulatePhotoUpload()" class="border-2 border-dashed border-gray-300 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer bg-gray-50 transition">
-        <i data-lucide="upload-cloud" class="w-10 h-10 text-emerald-700 mx-auto mb-2"></i>
-        <span class="text-xs font-bold text-emerald-950 block">Click to upload screenshot</span>
-        <span class="text-[11px] text-gray-400 mt-1 block">Supports JPG, PNG</span>
-      </div>
-
-      <div class="mt-4 flex justify-end space-x-2">
-        <button onclick="closePhotoScanModal()" class="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-700">Cancel</button>
-        <button onclick="simulatePhotoUpload()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow">Simulate Scan</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ========================================== -->
   <!-- JAVASCRIPT LOGIC & SUPABASE INTEGRATION     -->
   <!-- ========================================== -->
   <script>
-    /* 1. SUPABASE CLIENT CONFIGURATION */
+    /* 1. SUPABASE CLIENT CREDENTIALS */
     const SUPABASE_PROJECT_URL = 'https://qhbygsuwpnnthltbtxvr.supabase.co';
-    // Replace with your actual publishable key copied from Supabase API Keys page:
-   const SUPABASE_ANON_KEY = 'sb_publishable_MCSiK105BP67DucKb5sDOw_ikMeksb_publishable_MCSiK105BP67DucKb5sDOw_ikMekvzm';
+    // Paste your full anon publishable key here from your Supabase API Keys tab:
+    const SUPABASE_ANON_KEY = 'sb_publishable_MCSiK105BP67DucKb5sDOw_ikMek';
 
-    let supabaseClient = null;
-    let isCloudOnline = false;
-
+    let supabase = null;
     try {
       if (window.supabase && SUPABASE_PROJECT_URL && SUPABASE_ANON_KEY) {
-        supabaseClient = window.supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY);
+        supabase = window.supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY);
       }
     } catch (e) {
-      console.warn("Supabase initialization error, falling back to local demo state", e);
+      console.warn("Supabase init note: falling back to local session store", e);
     }
 
-    /* 2. CORE CONSTANTS & DEFAULT SEED DATA */
+    /* 2. CONSTANTS & CLEAN STATE (NO FAKE / MOCK PROFILES) */
     const MIN_EDITABLE_DATE = '2026-08-10'; // August 10, 2026 is fully editable
 
-    const DEFAULT_PROFILES = [
-      // 1st Year Approved Cohort
-      { student_id: '101', full_name: 'Aarav Kumar', mobile: '9848011223', role: 'student', batch_year: 1, status: 'approved', created_at: '2026-08-01' },
-      { student_id: '102', full_name: 'Ananya Reddy', mobile: '9848088990', role: 'student', batch_year: 1, status: 'approved', created_at: '2026-08-01' },
-      { student_id: '103', full_name: 'Rahul Sharma', mobile: '9848099001', role: 'student', batch_year: 1, status: 'approved', created_at: '2026-08-01' },
-      { student_id: '104', full_name: 'Priya Singh', mobile: '9848012345', role: 'student', batch_year: 1, status: 'approved', created_at: '2026-08-02' },
-      { student_id: '105', full_name: 'Vikram Rao', mobile: '9848066554', role: 'student', batch_year: 1, status: 'approved', created_at: '2026-08-02' },
-      { student_id: '106', full_name: 'Sneha Patel', mobile: '9848066778', role: 'student', batch_year: 1, status: 'approved', created_at: '2026-08-03' },
-
-      // 2nd Year Approved Cohort
-      { student_id: '15122356', full_name: 'Yestheri', mobile: '9848055667', role: 'student', batch_year: 2, status: 'approved', created_at: '2026-08-01' },
-      { student_id: '26772668', full_name: 'Keerthi Chandana', mobile: '9848044556', role: 'student', batch_year: 2, status: 'approved', created_at: '2026-08-01' },
-      { student_id: '39660664', full_name: 'Bala', mobile: '9848033445', role: 'student', batch_year: 2, status: 'approved', created_at: '2026-08-02' },
-      { student_id: '45255224', full_name: 'Koyyada Vikram Goud', mobile: '9848022334', role: 'student', batch_year: 2, status: 'approved', created_at: '2026-08-02' },
-      { student_id: '64756257', full_name: 'Kushalava Venkata Sai', mobile: '9848077889', role: 'student', batch_year: 2, status: 'approved', created_at: '2026-08-03' },
-
-      // Pending Registrations for Admin Inbox
-      { student_id: '301', full_name: 'Kiran Deep', mobile: '9876543210', role: 'student', batch_year: 1, status: 'pending', created_at: '2026-10-30 14:20' },
-      { student_id: '302', full_name: 'Sai Teja Reddy', mobile: '9876543211', role: 'student', batch_year: 2, status: 'pending', created_at: '2026-10-31 09:10' }
-    ];
-
-    const DEFAULT_ATTENDANCE = {
-      '101': { '2026-08-10': 'present', '2026-08-11': 'present', '2026-08-12': 'present', '2026-08-13': 'present', '2026-08-14': 'present' },
-      '102': { '2026-08-10': 'present', '2026-08-11': 'absent' },
-      '103': { '2026-08-10': 'present', '2026-08-11': 'present', '2026-08-12': 'absent' },
-      '104': { '2026-08-10': 'present', '2026-08-11': 'absent' },
-      '105': { '2026-08-10': 'absent', '2026-08-11': 'absent' },
-      '106': { '2026-08-10': 'present', '2026-08-11': 'present', '2026-08-12': 'present', '2026-08-13': 'absent' },
-      '15122356': { '2026-08-10': 'present', '2026-08-11': 'present', '2026-08-12': 'present', '2026-08-13': 'present', '2026-08-14': 'absent', '2026-08-17': 'present' },
-      '26772668': { '2026-08-10': 'absent', '2026-08-11': 'absent', '2026-08-12': 'present', '2026-08-13': 'absent', '2026-08-14': 'absent' },
-      '39660664': { '2026-08-10': 'present', '2026-08-11': 'present', '2026-08-12': 'absent', '2026-08-13': 'absent', '2026-08-14': 'present' },
-      '45255224': { '2026-08-10': 'present', '2026-08-11': 'present', '2026-08-12': 'absent', '2026-08-13': 'present', '2026-08-14': 'absent' },
-      '64756257': { '2026-08-10': 'present', '2026-08-11': 'absent', '2026-08-12': 'present', '2026-08-13': 'absent' },
-      '301': { '2026-08-10': 'present', '2026-08-11': 'present' },
-      '302': { '2026-08-10': 'absent', '2026-08-11': 'present' }
+    // Clean initial state with single default Admin profile
+    const DEFAULT_ADMIN = {
+      student_id: 'ADMIN01',
+      full_name: 'TME Administrator',
+      mobile: '9999999999',
+      role: 'admin',
+      batch_year: null,
+      status: 'approved',
+      created_at: new Date().toISOString()
     };
 
-    /* 3. APPLICATION STATE */
-    let appState = {
-      currentUserRole: 'student', // 'student' or 'admin'
-      currentStudentId: '101',
-      profiles: [],
-      attendanceMap: {},
-      currentMonth: 7, // 0-indexed: 7 = August
+    let state = {
+      authenticated: false,
+      currentUser: null,       // Profile object of logged in user
+      profiles: [],            // Real profiles loaded from Supabase
+      attendanceMap: {},       // { [student_id]: { [dateStr]: 'present'|'absent'|'holiday' } }
+      currentMonth: 7,         // August = 7 (0-indexed)
       currentYear: 2026,
       activeTab: 'myAttendance',
-      adminSubView: 'inbox',
+      adminSubTab: 'inbox',
+      adminFilter: 'all',
       multiSelectMode: false,
       selectedDates: new Set(),
       targetDateToEdit: null,
-      adminFilterCohort: '1'
+      isRegisterMode: false
     };
 
-    /* 4. PERSISTENCE & INITIALIZATION */
-    function loadInitialData() {
-      const savedProfiles = localStorage.getItem('nsti_profiles_cache');
-      const savedAttendance = localStorage.getItem('nsti_attendance_cache');
+    /* 3. INITIAL LOAD & PERSISTENCE */
+    async function initSystem() {
+      // 1. Check local session storage for already logged-in session
+      const savedUser = localStorage.getItem('nsti_session_user');
+      const cachedProfiles = localStorage.getItem('nsti_cached_profiles');
+      const cachedAttendance = localStorage.getItem('nsti_cached_attendance');
 
-      if (savedProfiles && savedAttendance) {
-        try {
-          appState.profiles = JSON.parse(savedProfiles);
-          appState.attendanceMap = JSON.parse(savedAttendance);
-        } catch (e) {
-          appState.profiles = JSON.parse(JSON.stringify(DEFAULT_PROFILES));
-          appState.attendanceMap = JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE));
-        }
-      } else {
-        appState.profiles = JSON.parse(JSON.stringify(DEFAULT_PROFILES));
-        appState.attendanceMap = JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE));
-        saveLocalCache();
+      if (cachedProfiles) {
+        try { state.profiles = JSON.parse(cachedProfiles); } catch (e) {}
+      }
+      if (cachedAttendance) {
+        try { state.attendanceMap = JSON.parse(cachedAttendance); } catch (e) {}
       }
 
-      // Try initial Supabase fetch
-      syncFromSupabase();
+      // Ensure Admin always exists
+      if (!state.profiles.some(p => p.student_id === DEFAULT_ADMIN.student_id)) {
+        state.profiles.push(DEFAULT_ADMIN);
+      }
+
+      // 2. Fetch live data from Supabase
+      await refreshData();
+
+      // 3. Auto-login if valid session exists
+      if (savedUser) {
+        try {
+          const userObj = JSON.parse(savedUser);
+          const fresh = state.profiles.find(p => p.student_id === userObj.student_id);
+          if (fresh) {
+            loginUserSession(fresh);
+          }
+        } catch (e) {
+          localStorage.removeItem('nsti_session_user');
+        }
+      }
+
+      lucide.createIcons();
     }
 
-    function saveLocalCache() {
-      localStorage.setItem('nsti_profiles_cache', JSON.stringify(appState.profiles));
-      localStorage.setItem('nsti_attendance_cache', JSON.stringify(appState.attendanceMap));
-    }
-
-    function resetDemoData() {
-      appState.profiles = JSON.parse(JSON.stringify(DEFAULT_PROFILES));
-      appState.attendanceMap = JSON.parse(JSON.stringify(DEFAULT_ATTENDANCE));
-      saveLocalCache();
-      showToast("Reset demo data to default.");
-      renderApp();
-    }
-
-    /* 5. SUPABASE REALTIME & SYNC ENGINE */
-    async function syncFromSupabase() {
-      if (!supabaseClient) return;
+    async function refreshData() {
+      if (!supabase) {
+        updateSyncBadge(false);
+        return;
+      }
 
       try {
-        const { data: profiles, error: pErr } = await supabaseClient
+        // Fetch profiles
+        const { data: remoteProfiles, error: pErr } = await supabase
           .from('profiles')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!pErr && profiles && profiles.length > 0) {
-          // Merge remote profiles
-          profiles.forEach(remote => {
-            const idx = appState.profiles.findIndex(p => p.student_id === remote.student_id);
-            if (idx >= 0) {
-              appState.profiles[idx] = { ...appState.profiles[idx], ...remote };
-            } else {
-              appState.profiles.push(remote);
-            }
-          });
-          isCloudOnline = true;
+        if (!pErr && remoteProfiles && remoteProfiles.length > 0) {
+          // Merge unique profiles
+          state.profiles = remoteProfiles;
+          if (!state.profiles.some(p => p.student_id === DEFAULT_ADMIN.student_id)) {
+            state.profiles.push(DEFAULT_ADMIN);
+          }
+          localStorage.setItem('nsti_cached_profiles', JSON.stringify(state.profiles));
         }
 
-        const { data: attendance, error: aErr } = await supabaseClient
+        // Fetch attendance records
+        const { data: remoteAttendance, error: aErr } = await supabase
           .from('attendance')
           .select('*');
 
-        if (!aErr && attendance && attendance.length > 0) {
-          attendance.forEach(row => {
-            if (!appState.attendanceMap[row.student_id]) {
-              appState.attendanceMap[row.student_id] = {};
-            }
-            appState.attendanceMap[row.student_id][row.date] = row.status;
+        if (!aErr && remoteAttendance) {
+          const newMap = {};
+          remoteAttendance.forEach(row => {
+            if (!newMap[row.student_id]) newMap[row.student_id] = {};
+            newMap[row.student_id][row.date] = row.status;
           });
+          state.attendanceMap = newMap;
+          localStorage.setItem('nsti_cached_attendance', JSON.stringify(state.attendanceMap));
         }
 
-        updateConnectionIndicator(true);
-        saveLocalCache();
-        renderApp();
+        updateSyncBadge(true);
 
-        // Subscribe to live changes
-        supabaseClient
-          .channel('realtime_all')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-            syncFromSupabase();
-          })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, () => {
-            syncFromSupabase();
-          })
+        // Realtime Subscription
+        supabase
+          .channel('schema-db-changes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => syncBackground())
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, () => syncBackground())
           .subscribe();
 
       } catch (err) {
-        console.warn("Supabase fetch notice: Operating in seamless local mode", err);
-        updateConnectionIndicator(false);
+        console.warn("Supabase fetch notice", err);
+        updateSyncBadge(false);
+      }
+
+      if (state.authenticated) {
+        renderPortal();
       }
     }
 
-    function updateConnectionIndicator(online) {
-      const dot = document.getElementById('realtimeDot');
-      const text = document.getElementById('realtimeStatusText');
+    async function syncBackground() {
+      if (!supabase) return;
+      try {
+        const { data: p } = await supabase.from('profiles').select('*');
+        if (p) state.profiles = p;
+        const { data: a } = await supabase.from('attendance').select('*');
+        if (a) {
+          const map = {};
+          a.forEach(r => {
+            if (!map[r.student_id]) map[r.student_id] = {};
+            map[r.student_id][r.date] = r.status;
+          });
+          state.attendanceMap = map;
+        }
+        if (state.authenticated) renderPortal();
+      } catch (e) {}
+    }
+
+    function updateSyncBadge(online) {
+      const dot = document.getElementById('syncDot');
+      const text = document.getElementById('syncStatusText');
       if (online) {
         dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
         text.textContent = 'Supabase Live';
       } else {
         dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
-        text.textContent = 'Local Sync Ready';
+        text.textContent = 'Local Standby';
       }
     }
 
-    /* 6. ATTENDANCE & 80% FORMULA ENGINE */
+    /* 4. AUTHENTICATION & REGISTRATION LOGIC */
+    function switchAuthTab(role) {
+      const bStudent = document.getElementById('authTabStudent');
+      const bAdmin = document.getElementById('authTabAdmin');
+      const boxStudent = document.getElementById('studentAuthBox');
+      const boxAdmin = document.getElementById('adminAuthBox');
+
+      if (role === 'student') {
+        bStudent.className = 'w-1/2 py-2.5 rounded-xl text-xs font-bold transition bg-white text-emerald-950 shadow-xs flex items-center justify-center space-x-1.5';
+        bAdmin.className = 'w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition flex items-center justify-center space-x-1.5';
+        boxStudent.classList.remove('hidden');
+        boxAdmin.classList.add('hidden');
+      } else {
+        bAdmin.className = 'w-1/2 py-2.5 rounded-xl text-xs font-bold transition bg-white text-emerald-950 shadow-xs flex items-center justify-center space-x-1.5';
+        bStudent.className = 'w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition flex items-center justify-center space-x-1.5';
+        boxAdmin.classList.remove('hidden');
+        boxStudent.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function toggleStudentRegisterMode() {
+      state.isRegisterMode = !state.isRegisterMode;
+      const nameField = document.getElementById('regNameField');
+      const yearField = document.getElementById('regYearField');
+      const heading = document.getElementById('studentFormSubheading');
+      const toggleBtn = document.getElementById('toggleStudentModeBtn');
+      const submitBtn = document.getElementById('studentSubmitBtn');
+
+      if (state.isRegisterMode) {
+        nameField.classList.remove('hidden');
+        yearField.classList.remove('hidden');
+        heading.textContent = 'Create New Student Account';
+        toggleBtn.textContent = 'Have an account? Sign in';
+        submitBtn.innerHTML = `<span>Submit for Approval</span><i data-lucide="check" class="w-4 h-4"></i>`;
+      } else {
+        nameField.classList.add('hidden');
+        yearField.classList.add('hidden');
+        heading.textContent = 'Sign In to Your Account';
+        toggleBtn.textContent = 'Need an account? Register';
+        submitBtn.innerHTML = `<span>Sign In to Portal</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+      }
+      lucide.createIcons();
+    }
+
+    async function handleStudentAuth() {
+      const id = document.getElementById('inputStudentID').value.trim();
+      const mobile = document.getElementById('inputStudentMobile').value.trim();
+
+      if (!id || !mobile) {
+        showToast("Please enter your Student ID and mobile number.");
+        return;
+      }
+
+      if (state.isRegisterMode) {
+        // REGISTRATION FLOW
+        const name = document.getElementById('inputStudentName').value.trim();
+        const year = parseInt(document.getElementById('inputStudentYear').value, 10);
+
+        if (!name) {
+          showToast("Please enter your full name.");
+          return;
+        }
+
+        if (state.profiles.some(p => p.student_id === id)) {
+          showToast("This Student ID is already registered. Please sign in.");
+          return;
+        }
+
+        const newProfile = {
+          student_id: id,
+          full_name: name,
+          mobile: mobile,
+          role: 'student',
+          batch_year: year,
+          status: 'pending', // Starts pending admin approval!
+          created_at: new Date().toISOString()
+        };
+
+        state.profiles.push(newProfile);
+        localStorage.setItem('nsti_cached_profiles', JSON.stringify(state.profiles));
+
+        if (supabase) {
+          try {
+            await supabase.from('profiles').insert([newProfile]);
+          } catch (e) {
+            console.warn("Supabase register write note", e);
+          }
+        }
+
+        showToast("Registration submitted! Awaiting Admin approval.");
+        loginUserSession(newProfile);
+
+      } else {
+        // SIGN IN FLOW
+        const student = state.profiles.find(p => p.student_id === id && p.mobile === mobile);
+        if (!student) {
+          showToast("Invalid Student ID or Mobile. Please register if you are new.");
+          return;
+        }
+
+        loginUserSession(student);
+      }
+    }
+
+    function handleAdminAuth() {
+      const id = document.getElementById('inputAdminID').value.trim();
+      const pass = document.getElementById('inputAdminPass').value.trim();
+
+      if (id === 'ADMIN01' && pass === '9999999999') {
+        const adminProfile = state.profiles.find(p => p.role === 'admin') || DEFAULT_ADMIN;
+        loginUserSession(adminProfile);
+        showToast("Signed in as Admin.");
+      } else {
+        showToast("Invalid Admin ID or Passkey.");
+      }
+    }
+
+    function loginUserSession(userProfile) {
+      state.authenticated = true;
+      state.currentUser = userProfile;
+      localStorage.setItem('nsti_session_user', JSON.stringify(userProfile));
+
+      // Hide auth screen, show dashboard
+      document.getElementById('authSection').classList.add('hidden');
+      const app = document.getElementById('appContainer');
+      app.classList.remove('hidden');
+      app.classList.add('flex');
+
+      // Update UI for role
+      const roleBadge = document.getElementById('headerRoleBadge');
+      const adminNavTab = document.getElementById('tabAdmin');
+
+      if (userProfile.role === 'admin') {
+        roleBadge.textContent = 'ADMIN';
+        roleBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-100 text-purple-900 border border-purple-300';
+        adminNavTab.classList.remove('hidden');
+        switchMainTab('admin');
+      } else {
+        roleBadge.textContent = userProfile.batch_year === 2 ? 'STUDENT (2ND YR)' : 'STUDENT (1ST YR)';
+        roleBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300';
+        adminNavTab.classList.add('hidden');
+        switchMainTab('myAttendance');
+      }
+
+      renderPortal();
+      showToast(`Signed in: ${userProfile.full_name}`);
+    }
+
+    function handleSignOut() {
+      state.authenticated = false;
+      state.currentUser = null;
+      localStorage.removeItem('nsti_session_user');
+
+      // Reset Inputs
+      document.getElementById('inputStudentID').value = '';
+      document.getElementById('inputStudentMobile').value = '';
+      document.getElementById('inputStudentName').value = '';
+
+      // Show Auth, Hide Dashboard
+      document.getElementById('appContainer').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('flex');
+      document.getElementById('authSection').classList.remove('hidden');
+
+      showToast("Signed out successfully.");
+    }
+
+    /* 5. ATTENDANCE & 80% FORMULA ENGINE */
     function isWeekend(dateObj) {
       const day = dateObj.getDay();
       return day === 0 || day === 6; // Sunday = 0, Saturday = 6
     }
 
-    function getStudentDayStatus(studentId, dateStr) {
-      const studentRecords = appState.attendanceMap[studentId];
-      if (studentRecords && studentRecords[dateStr] !== undefined) {
-        return studentRecords[dateStr];
+    function getAttendanceStatus(studentId, dateStr) {
+      const records = state.attendanceMap[studentId];
+      if (records && records[dateStr] !== undefined) {
+        return records[dateStr]; // 'present', 'absent', or 'holiday'
       }
       const d = new Date(dateStr + 'T00:00:00');
       if (isWeekend(d)) {
-        return 'holiday';
+        return 'holiday'; // Weekends default to holiday
       }
-      return null; // Regular unassigned weekday
+      return null; // Weekday defaults to clear editable
     }
 
-    function calculateStats(studentId) {
-      const records = appState.attendanceMap[studentId] || {};
+    function calculateAttendanceMetrics(studentId) {
+      const records = state.attendanceMap[studentId] || {};
       let present = 0;
       let absent = 0;
       let holidays = 0;
@@ -924,9 +1022,9 @@
       };
     }
 
-    /* 7. CALENDAR RENDERING */
+    /* 6. CALENDAR ENGINE */
     function renderCalendar() {
-      const grid = document.getElementById('calendarDaysGrid');
+      const grid = document.getElementById('calendarGrid');
       grid.innerHTML = '';
 
       const monthNames = [
@@ -934,35 +1032,35 @@
         "July", "August", "September", "October", "November", "December"
       ];
 
-      document.getElementById('calendarMonthTitle').textContent = `${monthNames[appState.currentMonth]} ${appState.currentYear}`;
+      document.getElementById('calendarTitle').textContent = `${monthNames[state.currentMonth]} ${state.currentYear}`;
 
-      const firstDayOfMonth = new Date(appState.currentYear, appState.currentMonth, 1).getDay();
-      const daysInMonth = new Date(appState.currentYear, appState.currentMonth + 1, 0).getDate();
+      const firstDay = new Date(state.currentYear, state.currentMonth, 1).getDay();
+      const totalDays = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
 
-      // Empty lead cells
-      for (let i = 0; i < firstDayOfMonth; i++) {
+      // Blank lead days
+      for (let i = 0; i < firstDay; i++) {
         const blank = document.createElement('div');
         blank.className = 'h-16 sm:h-20 bg-gray-50/50 rounded-xl border border-transparent';
         grid.appendChild(blank);
       }
 
-      // Render Day Cells
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${appState.currentYear}-${String(appState.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const dateObj = new Date(dateStr + 'T00:00:00');
-        const isLocked = dateStr < MIN_EDITABLE_DATE; // locked prior to August 10, 2026
-        const status = getStudentDayStatus(appState.currentStudentId, dateStr);
+      const activeId = state.currentUser ? state.currentUser.student_id : 'ADMIN01';
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${state.currentYear}-${String(state.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isLocked = dateStr < MIN_EDITABLE_DATE;
+        const status = getAttendanceStatus(activeId, dateStr);
 
         const tile = document.createElement('button');
         tile.type = 'button';
         let style = 'relative h-16 sm:h-20 rounded-xl p-1.5 flex flex-col justify-between text-left transition border ';
 
         if (isLocked) {
-          style += 'bg-gray-100/70 border-gray-200 text-gray-400 cursor-not-allowed opacity-60';
+          style += 'bg-gray-100/70 border-gray-200 text-gray-400 cursor-not-allowed opacity-60 ';
         } else {
-          tile.onclick = () => onCalendarTileClick(dateStr);
+          tile.onclick = () => onDayTileClick(dateStr);
 
-          if (appState.selectedDates.has(dateStr)) {
+          if (state.selectedDates.has(dateStr)) {
             style += 'ring-2 ring-emerald-600 border-emerald-600 bg-emerald-50 ';
           } else {
             style += 'hover:border-emerald-400 hover:shadow-xs ';
@@ -975,34 +1073,33 @@
           } else if (status === 'holiday') {
             style += 'bg-slate-200 text-slate-800 border-slate-300 ';
           } else {
-            // Unassigned editable weekday
             style += 'bg-white text-gray-800 border-gray-200 ';
           }
         }
 
         tile.className = style;
 
-        let statusText = '<span class="text-gray-300 font-normal">--</span>';
+        let statusDisplay = '<span class="text-gray-300 font-normal">--</span>';
         if (isLocked) {
-          statusText = '<span class="text-[10px] text-gray-400">Locked</span>';
+          statusDisplay = '<span class="text-[10px] text-gray-400">Locked</span>';
         } else if (status === 'present') {
-          statusText = '<span class="font-bold text-emerald-50">Present</span>';
+          statusDisplay = '<span class="font-bold text-emerald-50">Present</span>';
         } else if (status === 'absent') {
-          statusText = '<span class="font-bold text-rose-100">Absent</span>';
+          statusDisplay = '<span class="font-bold text-rose-100">Absent</span>';
         } else if (status === 'holiday') {
-          statusText = '<span class="text-slate-600 font-medium">Holiday</span>';
+          statusDisplay = '<span class="text-slate-600 font-medium">Holiday</span>';
         }
 
         tile.innerHTML = `
           <div class="flex items-center justify-between w-full">
             <span class="text-xs sm:text-sm font-bold">${day}</span>
             ${isLocked ? '<i data-lucide="lock" class="w-3 h-3 text-gray-400"></i>' : ''}
-            ${appState.multiSelectMode && !isLocked ? `
-              <input type="checkbox" ${appState.selectedDates.has(dateStr) ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-emerald-600 pointer-events-none" />
+            ${state.multiSelectMode && !isLocked ? `
+              <input type="checkbox" ${state.selectedDates.has(dateStr) ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-emerald-600 pointer-events-none" />
             ` : ''}
           </div>
           <div class="text-[10px] sm:text-xs font-semibold leading-tight truncate">
-            ${statusText}
+            ${statusDisplay}
           </div>
         `;
 
@@ -1012,31 +1109,31 @@
       lucide.createIcons();
     }
 
-    function navigateMonth(direction) {
-      appState.currentMonth += direction;
-      if (appState.currentMonth > 11) {
-        appState.currentMonth = 0;
-        appState.currentYear++;
-      } else if (appState.currentMonth < 0) {
-        appState.currentMonth = 11;
-        appState.currentYear--;
+    function changeMonth(delta) {
+      state.currentMonth += delta;
+      if (state.currentMonth > 11) {
+        state.currentMonth = 0;
+        state.currentYear++;
+      } else if (state.currentMonth < 0) {
+        state.currentMonth = 11;
+        state.currentYear--;
       }
       renderCalendar();
     }
 
-    function onCalendarTileClick(dateStr) {
+    function onDayTileClick(dateStr) {
       if (dateStr < MIN_EDITABLE_DATE) {
-        showToast("Dates before 10 August 2026 are locked.");
+        showToast("Dates prior to 10 August 2026 cannot be edited.");
         return;
       }
 
-      if (appState.multiSelectMode) {
-        if (appState.selectedDates.has(dateStr)) {
-          appState.selectedDates.delete(dateStr);
+      if (state.multiSelectMode) {
+        if (state.selectedDates.has(dateStr)) {
+          state.selectedDates.delete(dateStr);
         } else {
-          appState.selectedDates.add(dateStr);
+          state.selectedDates.add(dateStr);
         }
-        document.getElementById('selectedDaysCount').textContent = appState.selectedDates.size;
+        document.getElementById('batchCount').textContent = state.selectedDates.size;
         renderCalendar();
         return;
       }
@@ -1045,31 +1142,30 @@
     }
 
     function toggleMultiSelect() {
-      appState.multiSelectMode = !appState.multiSelectMode;
-      const btn = document.getElementById('multiSelectToggleBtn');
-      const bar = document.getElementById('bulkActionBar');
+      state.multiSelectMode = !state.multiSelectMode;
+      const btn = document.getElementById('btnMultiSelect');
+      const strip = document.getElementById('batchActionStrip');
 
-      if (appState.multiSelectMode) {
+      if (state.multiSelectMode) {
         btn.classList.add('bg-emerald-100', 'border-emerald-300', 'text-emerald-900');
-        bar.classList.remove('hidden');
+        strip.classList.remove('hidden');
         document.getElementById('multiSelectLabel').textContent = 'Done selecting';
       } else {
         btn.classList.remove('bg-emerald-100', 'border-emerald-300', 'text-emerald-900');
-        bar.classList.add('hidden');
+        strip.classList.add('hidden');
         document.getElementById('multiSelectLabel').textContent = 'Select multiple';
-        appState.selectedDates.clear();
+        state.selectedDates.clear();
       }
       renderCalendar();
     }
 
     function openDatePopover(dateStr) {
-      appState.targetDateToEdit = dateStr;
-      const student = appState.profiles.find(p => p.student_id === appState.currentStudentId) || appState.profiles[0];
+      state.targetDateToEdit = dateStr;
       const d = new Date(dateStr + 'T00:00:00');
-      const label = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      const dateText = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-      document.getElementById('popoverDateTitle').textContent = label;
-      document.getElementById('popoverStudentSubtitle').textContent = student.full_name;
+      document.getElementById('popoverDateHeading').textContent = dateText;
+      document.getElementById('popoverStudentHeading').textContent = state.currentUser ? state.currentUser.full_name : 'Admin';
 
       const modal = document.getElementById('datePopoverModal');
       modal.classList.remove('hidden');
@@ -1080,57 +1176,56 @@
       const modal = document.getElementById('datePopoverModal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
-      appState.targetDateToEdit = null;
+      state.targetDateToEdit = null;
     }
 
-    async function setAttendanceAction(status) {
-      if (!appState.targetDateToEdit) return;
-      const dateStr = appState.targetDateToEdit;
-      const sId = appState.currentStudentId;
+    async function saveSelectedDateStatus(status) {
+      if (!state.targetDateToEdit || !state.currentUser) return;
+      const dateStr = state.targetDateToEdit;
+      const studentId = state.currentUser.student_id;
 
-      await saveStudentDateRecord(sId, dateStr, status);
+      await persistAttendanceRecord(studentId, dateStr, status);
       closeDatePopover();
       showToast(`Marked ${status} for ${dateStr}`);
-      renderApp();
+      renderPortal();
     }
 
-    async function applyBatchStatus(status) {
-      if (appState.selectedDates.size === 0) {
-        showToast("Please pick at least one date.");
+    async function applyBatchAction(status) {
+      if (state.selectedDates.size === 0 || !state.currentUser) {
+        showToast("Please tap dates to select them first.");
         return;
       }
 
-      const sId = appState.currentStudentId;
-      for (const dateStr of appState.selectedDates) {
-        await saveStudentDateRecord(sId, dateStr, status);
+      const studentId = state.currentUser.student_id;
+      for (const d of state.selectedDates) {
+        await persistAttendanceRecord(studentId, d, status);
       }
 
-      showToast(`Updated ${appState.selectedDates.size} dates.`);
-      appState.selectedDates.clear();
-      document.getElementById('selectedDaysCount').textContent = '0';
-      renderApp();
+      showToast(`Updated ${state.selectedDates.size} dates.`);
+      state.selectedDates.clear();
+      document.getElementById('batchCount').textContent = '0';
+      renderPortal();
     }
 
-    async function saveStudentDateRecord(studentId, dateStr, status) {
-      if (!appState.attendanceMap[studentId]) {
-        appState.attendanceMap[studentId] = {};
+    async function persistAttendanceRecord(studentId, dateStr, status) {
+      if (!state.attendanceMap[studentId]) {
+        state.attendanceMap[studentId] = {};
       }
 
       if (status === 'clear') {
-        delete appState.attendanceMap[studentId][dateStr];
+        delete state.attendanceMap[studentId][dateStr];
       } else {
-        appState.attendanceMap[studentId][dateStr] = status;
+        state.attendanceMap[studentId][dateStr] = status;
       }
 
-      saveLocalCache();
+      localStorage.setItem('nsti_cached_attendance', JSON.stringify(state.attendanceMap));
 
-      // Cloud upsert if Supabase configured
-      if (supabaseClient) {
+      if (supabase) {
         try {
           if (status === 'clear') {
-            await supabaseClient.from('attendance').delete().match({ student_id: studentId, date: dateStr });
+            await supabase.from('attendance').delete().match({ student_id: studentId, date: dateStr });
           } else {
-            await supabaseClient.from('attendance').upsert({
+            await supabase.from('attendance').upsert({
               student_id: studentId,
               date: dateStr,
               status: status,
@@ -1138,127 +1233,142 @@
             }, { onConflict: 'student_id,date' });
           }
         } catch (e) {
-          console.warn("Supabase background sync paused", e);
+          console.warn("Supabase attendance sync notice", e);
         }
       }
     }
 
-    /* 8. RENDER OVERVIEW, CLASS COHORTS & ADMIN INBOX */
-    function renderApp() {
-      const curStudent = appState.profiles.find(p => p.student_id === appState.currentStudentId) || appState.profiles[0];
-      const stats = calculateStats(curStudent.student_id);
+    /* 7. PORTAL & SHARED CLASS VIEWS (YEAR ISOLATED) */
+    function renderPortal() {
+      if (!state.currentUser) return;
 
-      // Student Header Details
-      document.getElementById('currentStudentName').textContent = curStudent.full_name;
+      const user = state.currentUser;
+      const stats = calculateAttendanceMetrics(user.student_id);
+
+      // Greeting
+      document.getElementById('bannerGreeting').textContent = `Welcome, ${user.full_name}`;
+      document.getElementById('activeStudentName').textContent = user.full_name;
 
       // Badges
-      const badgesContainer = document.getElementById('currentStudentBadges');
-      const yearClass = curStudent.batch_year === 2 ? 'badge-year2' : 'badge-year1';
-      const yearText = curStudent.batch_year === 2 ? '2nd Year Cohort' : '1st Year Cohort';
-      const statusClass = curStudent.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'badge-pending animate-pulse';
-      const statusText = curStudent.status === 'approved' ? 'Approved' : 'Pending Admin Approval';
+      const badgesContainer = document.getElementById('activeStudentBadges');
+      const yearClass = user.batch_year === 2 ? 'badge-year2' : 'badge-year1';
+      const yearLabel = user.batch_year === 2 ? '2nd Year Cohort' : '1st Year Cohort';
+      const isApproved = user.status === 'approved';
 
       badgesContainer.innerHTML = `
-        <span class="text-xs font-bold px-2.5 py-1 rounded-lg ${yearClass}">${yearText}</span>
-        <span class="text-xs font-bold px-2.5 py-1 rounded-lg ${statusClass}">${statusText}</span>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-lg ${yearClass}">${yearLabel}</span>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-lg ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'badge-pending animate-pulse'}">
+          ${isApproved ? 'Approved' : 'Pending Admin Approval'}
+        </span>
       `;
 
       // Counters
-      document.getElementById('statPresentCount').textContent = stats.present;
-      document.getElementById('statAbsentCount').textContent = stats.absent;
-      document.getElementById('statCountedTotal').textContent = stats.countedDays;
-      document.getElementById('statPercentageText').textContent = `${stats.percentage}%`;
+      document.getElementById('statPresent').textContent = stats.present;
+      document.getElementById('statAbsent').textContent = stats.absent;
+      document.getElementById('statCounted').textContent = stats.countedDays;
+      document.getElementById('statPercentage').textContent = `${stats.percentage}%`;
 
       // Radial Gauge
       const circumference = 251.2;
       const offset = circumference - (stats.percentage / 100) * circumference;
-      const meter = document.getElementById('radialMeter');
+      const meter = document.getElementById('radialCircle');
       meter.style.strokeDashoffset = offset;
       meter.setAttribute('stroke', stats.isOnTrack ? '#0f766e' : '#e11d48');
 
       // 80% Advice
-      const adviceBadge = document.getElementById('targetAdviceBadge');
-      const adviceText = document.getElementById('targetAdviceText');
-      const subAdviceText = document.getElementById('targetSubAdviceText');
+      const advicePill = document.getElementById('targetPill');
+      const targetText = document.getElementById('targetStatusText');
+      const subText = document.getElementById('targetSubText');
 
       if (stats.isOnTrack) {
-        adviceBadge.className = 'mt-1 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center space-x-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300';
-        adviceText.textContent = `On track · ${stats.percentage}%`;
-        subAdviceText.textContent = stats.canMissToStay80 > 0
-          ? `You can safely miss ${stats.canMissToStay80} more classes to hold 80%.`
-          : `At target! Attend upcoming sessions to stay above 80%.`;
+        advicePill.className = 'mt-1 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center space-x-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300';
+        targetText.textContent = `On track · ${stats.percentage}%`;
+        subText.textContent = stats.canMissToStay80 > 0
+          ? `You can safely miss ${stats.canMissToStay80} more classes to maintain 80%.`
+          : `At target! Attend upcoming classes to remain eligible.`;
       } else {
-        adviceBadge.className = 'mt-1 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center space-x-1.5 bg-rose-100 text-rose-800 border border-rose-300';
-        adviceText.textContent = `Below 80% Target · ${stats.percentage}%`;
-        subAdviceText.textContent = `Attend ${stats.neededToReach80} consecutive classes to reach 80% target.`;
+        advicePill.className = 'mt-1 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center space-x-1.5 bg-rose-100 text-rose-800 border border-rose-300';
+        targetText.textContent = `Below 80% Target · ${stats.percentage}%`;
+        subText.textContent = `Attend ${stats.neededToReach80} consecutive classes to reach 80% target.`;
       }
 
-      // Pending Count Badges
-      const pendingCount = appState.profiles.filter(p => p.status === 'pending').length;
-      document.getElementById('navPendingCountBadge').textContent = pendingCount;
-      document.getElementById('adminPendingBadgePill').textContent = pendingCount;
-      document.getElementById('adminStatPending').textContent = pendingCount;
+      // Admin pending count
+      const pendingCount = state.profiles.filter(p => p.status === 'pending').length;
+      document.getElementById('navPendingPill').textContent = pendingCount;
+      document.getElementById('adminInboxBadge').textContent = pendingCount;
+      document.getElementById('adminMetricPending').textContent = pendingCount;
 
       renderCalendar();
-      renderClassView();
-      if (appState.currentUserRole === 'admin') {
-        renderAdminDashboard();
+      renderSharedClassView();
+      if (user.role === 'admin') {
+        renderAdminConsole();
       }
     }
 
-    function renderClassView() {
+    function renderSharedClassView() {
       const container = document.getElementById('classListContainer');
-      const lockout = document.getElementById('classPendingLockout');
+      const notice = document.getElementById('classPendingNotice');
       const pill = document.getElementById('classCohortPill');
       const countEl = document.getElementById('classCohortCount');
-      const header = document.getElementById('classCohortHeader');
+      const heading = document.getElementById('classCohortHeading');
 
       container.innerHTML = '';
-      const current = appState.profiles.find(p => p.student_id === appState.currentStudentId) || appState.profiles[0];
+      const user = state.currentUser;
 
-      // If student is pending, show lockout notification
-      if (appState.currentUserRole !== 'admin' && current.status === 'pending') {
-        lockout.classList.remove('hidden');
+      // STRICT PRIVACY RULE: If student is pending, lock class view
+      if (user.role !== 'admin' && user.status === 'pending') {
+        notice.classList.remove('hidden');
         container.classList.add('hidden');
         pill.className = 'text-xs font-bold px-3 py-1 rounded-full badge-pending';
-        pill.textContent = 'Awaiting Approval';
-        countEl.textContent = 'Hidden';
-        header.textContent = 'Class Attendance (Locked)';
+        pill.textContent = 'Approval Pending';
+        countEl.textContent = 'Locked';
+        heading.textContent = 'Class Attendance (Locked)';
         return;
       }
 
-      lockout.classList.add('hidden');
+      notice.classList.add('hidden');
       container.classList.remove('hidden');
 
-      let visible = [];
+      let cohortList = [];
 
-      if (appState.currentUserRole === 'admin') {
-        visible = appState.profiles.filter(p => p.status === 'approved');
+      if (user.role === 'admin') {
+        cohortList = state.profiles.filter(p => p.status === 'approved' && p.role !== 'admin');
         pill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-900 border border-purple-300';
-        pill.textContent = 'All Batches (Admin View)';
-        header.textContent = 'TME · Complete Class Directory';
-      } else if (current.batch_year === 1) {
-        // 1st Year cohort only
-        visible = appState.profiles.filter(p => p.batch_year === 1 && p.status === 'approved');
+        pill.textContent = 'Master Directory (Admin)';
+        heading.textContent = 'TME · Complete Class Directory';
+      } else if (user.batch_year === 1) {
+        // 1st Year cohort ONLY
+        cohortList = state.profiles.filter(p => p.batch_year === 1 && p.status === 'approved');
         pill.className = 'text-xs font-bold px-3 py-1 rounded-full badge-year1';
         pill.textContent = '1st Year Cohort';
-        header.textContent = '1st Year · Class Attendance';
+        heading.textContent = '1st Year · Class Attendance';
       } else {
-        // 2nd Year cohort only
-        visible = appState.profiles.filter(p => p.batch_year === 2 && p.status === 'approved');
+        // 2nd Year cohort ONLY
+        cohortList = state.profiles.filter(p => p.batch_year === 2 && p.status === 'approved');
         pill.className = 'text-xs font-bold px-3 py-1 rounded-full badge-year2';
         pill.textContent = '2nd Year Cohort';
-        header.textContent = '2nd Year · Class Attendance';
+        heading.textContent = '2nd Year · Class Attendance';
       }
 
-      countEl.textContent = `${visible.length} students`;
+      countEl.textContent = `${cohortList.length} students`;
 
-      visible.forEach(st => {
-        const stStats = calculateStats(st.student_id);
+      if (cohortList.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-gray-400 text-xs">
+            <i data-lucide="users" class="w-8 h-8 text-gray-300 mx-auto mb-2"></i>
+            No approved students in this batch yet.
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      cohortList.forEach(st => {
+        const stStats = calculateAttendanceMetrics(st.student_id);
         const card = document.createElement('div');
         card.className = 'bg-white rounded-xl border border-gray-200/90 p-4 hover:shadow-xs transition flex flex-col sm:flex-row sm:items-center justify-between gap-4';
 
-        const isMe = st.student_id === appState.currentStudentId;
+        const isMe = st.student_id === user.student_id;
         const tagClass = st.batch_year === 2 ? 'badge-year2' : 'badge-year1';
         const tagLabel = st.batch_year === 2 ? '2nd Year' : '1st Year';
 
@@ -1274,7 +1384,6 @@
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${tagClass}">
                   ${tagLabel}
                 </span>
-                ${appState.currentUserRole === 'admin' ? `<span class="text-[10px] text-gray-400">ID: ${st.student_id}</span>` : ''}
               </div>
               <div class="text-xs text-gray-500 flex items-center space-x-2 mt-0.5">
                 <span>${stStats.present} of ${stStats.countedDays} attended</span>
@@ -1297,23 +1406,25 @@
 
         container.appendChild(card);
       });
+
+      lucide.createIcons();
     }
 
-    function renderAdminDashboard() {
-      // 1. Pending Inbox
-      const inboxList = document.getElementById('adminPendingListContainer');
-      inboxList.innerHTML = '';
-      const pending = appState.profiles.filter(p => p.status === 'pending');
+    function renderAdminConsole() {
+      // 1. Pending Approvals Inbox
+      const pendingBox = document.getElementById('adminPendingContainer');
+      pendingBox.innerHTML = '';
+      const pendingList = state.profiles.filter(p => p.status === 'pending');
 
-      if (pending.length === 0) {
-        inboxList.innerHTML = `
+      if (pendingList.length === 0) {
+        pendingBox.innerHTML = `
           <div class="py-8 text-center text-gray-400 text-xs">
             <i data-lucide="check-circle" class="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-60"></i>
-            Inbox clear. All registrations have been reviewed.
+            Inbox is clear. No pending registration requests.
           </div>
         `;
       } else {
-        pending.forEach(p => {
+        pendingList.forEach(p => {
           const item = document.createElement('div');
           item.className = 'border border-amber-200 bg-amber-50/60 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4';
           item.innerHTML = `
@@ -1329,9 +1440,9 @@
                   </span>
                 </div>
                 <div class="text-xs text-gray-600 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span>ID: <strong class="text-gray-900">${p.student_id}</strong></span>
+                  <span>Student ID: <strong class="text-gray-900">${p.student_id}</strong></span>
                   <span>•</span>
-                  <span>Phone: ${p.mobile}</span>
+                  <span>Mobile: ${p.mobile}</span>
                   <span>•</span>
                   <span>Requested: <strong>${p.batch_year === 2 ? '2nd Year' : '1st Year'}</strong></span>
                 </div>
@@ -1339,431 +1450,199 @@
             </div>
 
             <div class="flex items-center space-x-2 flex-wrap gap-2">
-              <button onclick="approveStudent('${p.student_id}', 1)" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1 shadow-xs">
+              <button onclick="approveStudentRegistration('${p.student_id}', 1)" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1 shadow-xs">
                 <i data-lucide="check" class="w-3.5 h-3.5"></i>
                 <span>Approve 1st Year</span>
               </button>
-              <button onclick="approveStudent('${p.student_id}', 2)" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1 shadow-xs">
+              <button onclick="approveStudentRegistration('${p.student_id}', 2)" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1 shadow-xs">
                 <i data-lucide="check" class="w-3.5 h-3.5"></i>
                 <span>Approve 2nd Year</span>
               </button>
-              <button onclick="rejectStudent('${p.student_id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold border border-rose-200 transition">
+              <button onclick="rejectStudentRegistration('${p.student_id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold border border-rose-200 transition">
                 Reject
               </button>
             </div>
           `;
-          inboxList.appendChild(item);
+          pendingBox.appendChild(item);
         });
       }
 
-      // 2. Metrics & Directory
-      const directory = document.getElementById('adminStudentDirectoryContainer');
-      directory.innerHTML = '';
-
-      const approved = appState.profiles.filter(p => p.status === 'approved');
-      const y1Count = approved.filter(p => p.batch_year === 1).length;
-      const y2Count = approved.filter(p => p.batch_year === 2).length;
+      // 2. Metrics & Approved Directory
+      const approved = state.profiles.filter(p => p.status === 'approved' && p.role !== 'admin');
+      const y1 = approved.filter(p => p.batch_year === 1).length;
+      const y2 = approved.filter(p => p.batch_year === 2).length;
       let belowCount = 0;
 
       approved.forEach(p => {
-        const st = calculateStats(p.student_id);
+        const st = calculateAttendanceMetrics(p.student_id);
         if (!st.isOnTrack) belowCount++;
       });
 
-      document.getElementById('adminStatY1').textContent = y1Count;
-      document.getElementById('adminStatY2').textContent = y2Count;
-      document.getElementById('adminStatBelow').textContent = belowCount;
+      document.getElementById('adminMetricY1').textContent = y1;
+      document.getElementById('adminMetricY2').textContent = y2;
+      document.getElementById('adminMetricBelow').textContent = belowCount;
 
-      let filtered = approved;
-      if (appState.adminFilterCohort === '1') filtered = approved.filter(p => p.batch_year === 1);
-      else if (appState.adminFilterCohort === '2') filtered = approved.filter(p => p.batch_year === 2);
+      const directoryBox = document.getElementById('adminApprovedContainer');
+      directoryBox.innerHTML = '';
 
-      filtered.forEach(p => {
-        const st = calculateStats(p.student_id);
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl border border-gray-200 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4';
+      let list = approved;
+      if (state.adminFilter === '1') list = approved.filter(p => p.batch_year === 1);
+      else if (state.adminFilter === '2') list = approved.filter(p => p.batch_year === 2);
 
-        const tagClass = p.batch_year === 2 ? 'badge-year2' : 'badge-year1';
-        const tagLabel = p.batch_year === 2 ? '2nd Year Cohort' : '1st Year Cohort';
-
-        card.innerHTML = `
-          <div class="flex items-center space-x-3.5">
-            <div class="w-12 h-12 rounded-2xl ${st.isOnTrack ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} flex items-center justify-center font-extrabold text-base flex-shrink-0">
-              ${st.percentage}%
-            </div>
-            <div>
-              <div class="flex items-center space-x-2">
-                <h4 class="font-bold text-gray-900 text-base">${p.full_name}</h4>
-                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${tagClass}">
-                  ${tagLabel}
-                </span>
-              </div>
-              <div class="text-xs text-gray-500 mt-1 flex items-center space-x-3">
-                <span>Roll ID: <strong>${p.student_id}</strong></span>
-                <span>•</span>
-                <span>Phone: ${p.mobile}</span>
-                <span>•</span>
-                <span>Attended: ${st.present} / ${st.countedDays}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex items-center space-x-2 self-end sm:self-center">
-            <button onclick="editCalendarForStudent('${p.student_id}')" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-xs">
-              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-              <span>Edit Calendar</span>
-            </button>
-            <button onclick="deleteStudentProfile('${p.student_id}')" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition" title="Delete Student">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
+      if (list.length === 0) {
+        directoryBox.innerHTML = `
+          <div class="py-8 text-center text-gray-400 text-xs">
+            No students found in this filter view.
           </div>
         `;
-        directory.appendChild(card);
-      });
+      } else {
+        list.forEach(p => {
+          const st = calculateAttendanceMetrics(p.student_id);
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-2xl border border-gray-200 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4';
+
+          const tagClass = p.batch_year === 2 ? 'badge-year2' : 'badge-year1';
+          const tagLabel = p.batch_year === 2 ? '2nd Year Cohort' : '1st Year Cohort';
+
+          card.innerHTML = `
+            <div class="flex items-center space-x-3.5">
+              <div class="w-12 h-12 rounded-2xl ${st.isOnTrack ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} flex items-center justify-center font-extrabold text-base flex-shrink-0">
+                ${st.percentage}%
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h4 class="font-bold text-gray-900 text-base">${p.full_name}</h4>
+                  <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${tagClass}">
+                    ${tagLabel}
+                  </span>
+                </div>
+                <div class="text-xs text-gray-500 mt-1 flex items-center space-x-3">
+                  <span>ID: <strong>${p.student_id}</strong></span>
+                  <span>•</span>
+                  <span>Mobile: ${p.mobile}</span>
+                  <span>•</span>
+                  <span>Attended: ${st.present} / ${st.countedDays}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2 self-end sm:self-center">
+              <button onclick="adminInspectCalendar('${p.student_id}')" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                <span>Edit Calendar</span>
+              </button>
+            </div>
+          `;
+          directoryBox.appendChild(card);
+        });
+      }
 
       lucide.createIcons();
     }
 
-    /* 9. APPROVAL & STUDENT ACTIONS */
-    async function approveStudent(studentId, batchYear) {
-      const student = appState.profiles.find(p => p.student_id === studentId);
+    /* 8. ADMIN ACTIONS */
+    async function approveStudentRegistration(studentId, batchYear) {
+      const student = state.profiles.find(p => p.student_id === studentId);
       if (!student) return;
 
       student.status = 'approved';
       student.batch_year = batchYear;
-      saveLocalCache();
+      localStorage.setItem('nsti_cached_profiles', JSON.stringify(state.profiles));
 
-      if (supabaseClient) {
+      if (supabase) {
         try {
-          await supabaseClient.from('profiles').update({ status: 'approved', batch_year: batchYear }).eq('student_id', studentId);
+          await supabase.from('profiles').update({
+            status: 'approved',
+            batch_year: batchYear
+          }).eq('student_id', studentId);
         } catch (e) {
-          console.warn("Supabase background update notice", e);
+          console.warn("Supabase approve note", e);
         }
       }
 
       showToast(`Approved ${student.full_name} for ${batchYear === 2 ? '2nd Year' : '1st Year'}.`);
-      renderApp();
+      renderPortal();
     }
 
-    async function rejectStudent(studentId) {
-      appState.profiles = appState.profiles.filter(p => p.student_id !== studentId);
-      saveLocalCache();
+    async function rejectStudentRegistration(studentId) {
+      state.profiles = state.profiles.filter(p => p.student_id !== studentId);
+      localStorage.setItem('nsti_cached_profiles', JSON.stringify(state.profiles));
 
-      if (supabaseClient) {
+      if (supabase) {
         try {
-          await supabaseClient.from('profiles').delete().eq('student_id', studentId);
+          await supabase.from('profiles').delete().eq('student_id', studentId);
         } catch (e) {
-          console.warn("Supabase background delete notice", e);
+          console.warn("Supabase reject note", e);
         }
       }
 
-      showToast("Registration rejected.");
-      renderApp();
+      showToast("Student registration rejected.");
+      renderPortal();
     }
 
-    function editCalendarForStudent(studentId) {
-      appState.currentStudentId = studentId;
-      switchTab('myAttendance');
-      showToast(`Viewing calendar for ${appState.profiles.find(p=>p.student_id === studentId)?.full_name}`);
+    function adminInspectCalendar(studentId) {
+      const student = state.profiles.find(p => p.student_id === studentId);
+      if (!student) return;
+      state.currentUser = student;
+      switchMainTab('myAttendance');
+      showToast(`Managing calendar for ${student.full_name}`);
     }
 
-    function deleteStudentProfile(studentId) {
-      if (appState.profiles.length <= 1) {
-        showToast("Cannot delete the only student.");
-        return;
-      }
-      appState.profiles = appState.profiles.filter(p => p.student_id !== studentId);
-      if (appState.currentStudentId === studentId) {
-        appState.currentStudentId = appState.profiles[0].student_id;
-      }
-      saveLocalCache();
-      renderApp();
-      showToast("Student profile removed.");
-    }
-
-    /* 10. AUTH & LOGIN / REGISTRATION WORKFLOW */
-    function switchTab(tab) {
-      appState.activeTab = tab;
+    /* 9. TAB SWITCHERS */
+    function switchMainTab(tab) {
+      state.activeTab = tab;
       ['myAttendance', 'class', 'admin'].forEach(t => {
         const btn = document.getElementById(`tab${capitalize(t)}`);
         const view = document.getElementById(`view${capitalize(t)}`);
         if (t === tab) {
-          btn?.classList.add('bg-white', 'text-emerald-950', 'shadow-sm');
+          btn?.classList.add('bg-white', 'text-emerald-950', 'shadow-xs');
           btn?.classList.remove('text-gray-600');
           view?.classList.remove('hidden');
         } else {
-          btn?.classList.remove('bg-white', 'text-emerald-950', 'shadow-sm');
+          btn?.classList.remove('bg-white', 'text-emerald-950', 'shadow-xs');
           btn?.classList.add('text-gray-600');
           view?.classList.add('hidden');
         }
       });
-      renderApp();
+      renderPortal();
     }
 
-    function switchAdminSubView(view) {
-      appState.adminSubView = view;
+    function switchAdminSubTab(tab) {
+      state.adminSubTab = tab;
       const bInbox = document.getElementById('adminSubInboxBtn');
-      const bStudents = document.getElementById('adminSubStudentsBtn');
-      const vInbox = document.getElementById('adminInboxView');
-      const vStudents = document.getElementById('adminStudentsView');
+      const bDir = document.getElementById('adminSubDirectoryBtn');
+      const sInbox = document.getElementById('adminSubInboxSection');
+      const sDir = document.getElementById('adminSubDirectorySection');
 
-      if (view === 'inbox') {
+      if (tab === 'inbox') {
         bInbox.className = 'px-4 py-2 font-bold text-sm rounded-xl transition bg-emerald-900 text-white flex items-center space-x-2';
-        bStudents.className = 'px-4 py-2 font-bold text-sm rounded-xl transition text-gray-600 hover:text-gray-900 flex items-center space-x-2';
-        vInbox.classList.remove('hidden');
-        vStudents.classList.add('hidden');
+        bDir.className = 'px-4 py-2 font-bold text-sm rounded-xl transition text-gray-600 hover:text-gray-900 flex items-center space-x-2';
+        sInbox.classList.remove('hidden');
+        sDir.classList.add('hidden');
       } else {
-        bStudents.className = 'px-4 py-2 font-bold text-sm rounded-xl transition bg-emerald-900 text-white flex items-center space-x-2';
+        bDir.className = 'px-4 py-2 font-bold text-sm rounded-xl transition bg-emerald-900 text-white flex items-center space-x-2';
         bInbox.className = 'px-4 py-2 font-bold text-sm rounded-xl transition text-gray-600 hover:text-gray-900 flex items-center space-x-2';
-        vStudents.classList.remove('hidden');
-        vInbox.classList.add('hidden');
+        sDir.classList.remove('hidden');
+        sInbox.classList.add('hidden');
       }
-      renderAdminDashboard();
+      renderAdminConsole();
     }
 
-    function setAdminCohortFilter(filter) {
-      appState.adminFilterCohort = filter;
-      const b1 = document.getElementById('filterY1Btn');
-      const b2 = document.getElementById('filterY2Btn');
-      const ba = document.getElementById('filterAllBtn');
+    function setAdminFilter(f) {
+      state.adminFilter = f;
+      const bAll = document.getElementById('adminFilterAll');
+      const b1 = document.getElementById('adminFilterY1');
+      const b2 = document.getElementById('adminFilterY2');
 
-      [b1, b2, ba].forEach(b => {
-        b.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-gray-900 transition';
-      });
+      [bAll, b1, b2].forEach(b => b.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:text-gray-900 transition');
+      if (f === 'all') bAll.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
+      if (f === '1') b1.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
+      if (f === '2') b2.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
 
-      if (filter === '1') b1.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
-      if (filter === '2') b2.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
-      if (filter === 'all') ba.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
-
-      renderAdminDashboard();
+      renderAdminConsole();
     }
 
-    function openLoginModal() {
-      const select = document.getElementById('loginStudentSelect');
-      select.innerHTML = '';
-
-      const g1 = document.createElement('optgroup');
-      g1.label = "1st Year (Approved)";
-      const g2 = document.createElement('optgroup');
-      g2.label = "2nd Year (Approved)";
-      const gp = document.createElement('optgroup');
-      gp.label = "Pending Approvals";
-
-      appState.profiles.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.student_id;
-        opt.textContent = `${p.full_name} (${p.status === 'pending' ? 'Pending' : (p.batch_year === 2 ? '2nd Yr' : '1st Yr')})`;
-
-        if (p.status === 'pending') gp.appendChild(opt);
-        else if (p.batch_year === 2) g2.appendChild(opt);
-        else g1.appendChild(opt);
-      });
-
-      select.appendChild(g1);
-      select.appendChild(g2);
-      if (gp.children.length > 0) select.appendChild(gp);
-      select.value = appState.currentStudentId;
-
-      document.getElementById('loginModal').classList.remove('hidden');
-      document.getElementById('loginModal').classList.add('flex');
-    }
-
-    function closeLoginModal() {
-      document.getElementById('loginModal').classList.add('hidden');
-      document.getElementById('loginModal').classList.remove('flex');
-    }
-
-    function switchLoginModalRole(role) {
-      const bStudent = document.getElementById('modalTabStudent');
-      const bAdmin = document.getElementById('modalTabAdmin');
-      const secStudent = document.getElementById('modalStudentSection');
-      const secAdmin = document.getElementById('modalAdminSection');
-
-      if (role === 'student') {
-        bStudent.className = 'w-1/2 py-2 rounded-xl text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
-        bAdmin.className = 'w-1/2 py-2 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition';
-        secStudent.classList.remove('hidden');
-        secAdmin.classList.add('hidden');
-      } else {
-        bAdmin.className = 'w-1/2 py-2 rounded-xl text-xs font-bold transition bg-white text-emerald-950 shadow-xs';
-        bStudent.className = 'w-1/2 py-2 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 transition';
-        secAdmin.classList.remove('hidden');
-        secStudent.classList.add('hidden');
-      }
-    }
-
-    async function submitStudentRegistration() {
-      const name = document.getElementById('regFullName').value.trim();
-      const id = document.getElementById('regStudentId').value.trim();
-      const mobile = document.getElementById('regMobile').value.trim() || '9848012345';
-      const batchYear = parseInt(document.getElementById('regCohort').value, 10);
-
-      if (!name || !id) {
-        showToast("Please enter name and student ID.");
-        return;
-      }
-
-      if (appState.profiles.some(p => p.student_id === id)) {
-        showToast("This student ID is already registered.");
-        return;
-      }
-
-      const newStudent = {
-        student_id: id,
-        full_name: name,
-        mobile: mobile,
-        role: 'student',
-        batch_year: batchYear,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      };
-
-      appState.profiles.push(newStudent);
-      appState.currentStudentId = id;
-      appState.currentUserRole = 'student';
-      saveLocalCache();
-
-      if (supabaseClient) {
-        try {
-          await supabaseClient.from('profiles').insert([newStudent]);
-        } catch (e) {
-          console.warn("Supabase background registration notice", e);
-        }
-      }
-
-      closeLoginModal();
-      showToast("Registered successfully! Pending Admin verification.");
-      updateRoleHeaderUI();
-      switchTab('myAttendance');
-    }
-
-    function confirmStudentLogin() {
-      const id = document.getElementById('loginStudentSelect').value;
-      appState.currentStudentId = id;
-      appState.currentUserRole = 'student';
-      closeLoginModal();
-      updateRoleHeaderUI();
-      showToast(`Logged in as ${appState.profiles.find(p=>p.student_id === id)?.full_name}`);
-      switchTab('myAttendance');
-    }
-
-    function confirmAdminLogin() {
-      const pass = document.getElementById('adminPasskeyInput').value;
-      if (pass === 'admin123') {
-        appState.currentUserRole = 'admin';
-        closeLoginModal();
-        updateRoleHeaderUI();
-        showToast("Signed in as Admin");
-        switchTab('admin');
-      } else {
-        showToast("Invalid passkey. Default is admin123");
-      }
-    }
-
-    function quickSelectStudent(id) {
-      appState.currentStudentId = id;
-      appState.currentUserRole = 'student';
-      updateRoleHeaderUI();
-      showToast(`Switched to ${appState.profiles.find(p=>p.student_id === id)?.full_name}`);
-      switchTab('myAttendance');
-    }
-
-    function quickSelectAdmin() {
-      appState.currentUserRole = 'admin';
-      updateRoleHeaderUI();
-      showToast("Admin mode active");
-      switchTab('admin');
-    }
-
-    function updateRoleHeaderUI() {
-      const badge = document.getElementById('userRoleBadge');
-      const label = document.getElementById('authBtnLabel');
-      const adminNavTab = document.getElementById('tabAdmin');
-
-      if (appState.currentUserRole === 'admin') {
-        badge.textContent = 'ADMIN';
-        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-100 text-purple-900 border border-purple-300';
-        label.textContent = 'Sign out';
-        adminNavTab.classList.remove('hidden');
-      } else {
-        badge.textContent = 'STUDENT';
-        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300';
-        label.textContent = 'Sign in / Switch';
-        adminNavTab.classList.add('hidden');
-      }
-      renderApp();
-    }
-
-    /* 11. ADMIN PRE-APPROVED CREATION & PHOTO SCAN */
-    function openAddStudentModal() {
-      document.getElementById('addStudentModal').classList.remove('hidden');
-      document.getElementById('addStudentModal').classList.add('flex');
-    }
-
-    function closeAddStudentModal() {
-      document.getElementById('addStudentModal').classList.add('hidden');
-      document.getElementById('addStudentModal').classList.remove('flex');
-    }
-
-    async function saveAdminStudentDirect() {
-      const name = document.getElementById('newAdminStudentName').value.trim();
-      const id = document.getElementById('newAdminStudentId').value.trim();
-      const batch = parseInt(document.getElementById('newAdminStudentBatch').value, 10);
-
-      if (!name || !id) {
-        showToast("Please provide both name and roll ID.");
-        return;
-      }
-
-      const newStudent = {
-        student_id: id,
-        full_name: name,
-        mobile: '98480' + Math.floor(10000 + Math.random() * 90000),
-        role: 'student',
-        batch_year: batch,
-        status: 'approved',
-        created_at: new Date().toISOString()
-      };
-
-      appState.profiles.push(newStudent);
-      saveLocalCache();
-
-      if (supabaseClient) {
-        try {
-          await supabaseClient.from('profiles').insert([newStudent]);
-        } catch (e) {
-          console.warn("Supabase background student creation notice", e);
-        }
-      }
-
-      closeAddStudentModal();
-      showToast(`Added ${name} to ${batch === 2 ? '2nd Year' : '1st Year'}.`);
-      renderApp();
-    }
-
-    function openPhotoScanModal() {
-      document.getElementById('photoScanModal').classList.remove('hidden');
-      document.getElementById('photoScanModal').classList.add('flex');
-    }
-
-    function closePhotoScanModal() {
-      document.getElementById('photoScanModal').classList.add('hidden');
-      document.getElementById('photoScanModal').classList.remove('flex');
-    }
-
-    function simulatePhotoUpload() {
-      closePhotoScanModal();
-      showToast("Scanning portal screenshot...");
-      setTimeout(() => {
-        const sId = appState.currentStudentId;
-        const weekDates = ['2026-08-10', '2026-08-11', '2026-08-12', '2026-08-13', '2026-08-14'];
-        weekDates.forEach(d => saveStudentDateRecord(sId, d, 'present'));
-        showToast("Photo synced: 5 days marked Present from register.");
-        renderApp();
-      }, 1000);
-    }
-
-    /* 12. UTILITY TOAST & STARTUP */
+    /* 10. UTILITIES */
     function showToast(msg) {
       const toast = document.getElementById('toast');
       const text = document.getElementById('toastMsg');
@@ -1774,7 +1653,7 @@
       setTimeout(() => {
         toast.classList.remove('opacity-100', 'translate-y-0');
         toast.classList.add('opacity-0', '-translate-y-16');
-      }, 2800);
+      }, 3000);
     }
 
     function capitalize(str) {
@@ -1782,10 +1661,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadInitialData();
-      updateRoleHeaderUI();
-      renderApp();
-      lucide.createIcons();
+      initSystem();
     });
   </script>
 </body>
