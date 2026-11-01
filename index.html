@@ -1116,6 +1116,17 @@
 
       <!-- TAB 2: CLASS DIRECTORY VIEW -->
       <div id="tabContentClassView" class="hidden">
+        <!-- Admin Student Inspection Banner (Shown when admin is editing a student's calendar) -->
+        <div id="adminInspectNotice" class="hidden" style="background: #ecfdf5; border: 1.5px solid #10b981; border-radius: var(--radius-md); padding: 0.85rem 1.15rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--primary-800); letter-spacing: 0.04em;">Editing Student Attendance</span>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--neutral-900);" id="adminInspectStudentTitle">--</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="window.exitAdminStudentInspection()">
+            ← Back to Directory
+          </button>
+        </div>
+
         <div class="card">
           
           <!-- Cohort Isolation Lock for Pending Students -->
@@ -1311,11 +1322,55 @@
     </div>
   </div>
 
+  <!-- ======================================================== -->
+  <!-- 5. ADMIN EDIT STUDENT DETAILS MODAL                      -->
+  <!-- ======================================================== -->
+  <div id="adminEditStudentModal" class="modal-backdrop hidden">
+    <div class="modal-box" style="text-align: left; max-width: 420px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid var(--neutral-200); padding-bottom: 0.5rem;">
+        <div>
+          <h4 style="font-weight: 800; font-size: 1.1rem; color: var(--primary-900);">Edit Student</h4>
+          <span style="font-size: 0.72rem; color: var(--neutral-600);">Modify cohort enrollment or remove student</span>
+        </div>
+        <button onclick="window.closeAdminEditStudentModal()" style="font-size: 1.25rem; font-weight: 800; border: none; background: none; color: var(--neutral-400); cursor: pointer;">✕</button>
+      </div>
+
+      <input type="hidden" id="editStudentTargetId" />
+
+      <div class="form-group">
+        <label class="form-label">Student Name</label>
+        <input type="text" id="editStudentFullName" class="form-input" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Roll ID</label>
+        <input type="text" id="editStudentRollId" class="form-input" disabled style="background: var(--neutral-100); color: var(--neutral-600);" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cohort Batch</label>
+        <select id="editStudentCohortSelect" class="form-select">
+          <option value="1">1st Year (Junior Batch)</option>
+          <option value="2">2nd Year (Senior Batch)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-top: 1.25rem;">
+        <button class="btn btn-primary" style="flex: 1;" onclick="window.saveAdminStudentChanges()">
+          Save Changes
+        </button>
+        <button class="btn btn-outline" style="color: var(--danger-600); border-color: var(--danger-100); background: var(--danger-50);" onclick="window.deleteStudentFromDirectory()">
+          Remove Student
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Box -->
   <div id="toastMessage">Notification message</div>
 
   <!-- ======================================================== -->
-  <!-- 5. JAVASCRIPT LOGIC & STATE CONTROLLER                   -->
+  <!-- 6. JAVASCRIPT LOGIC & STATE CONTROLLER                   -->
   <!-- ======================================================== -->
   <script>
     (function() {
@@ -1395,7 +1450,8 @@
         activeDirectorySort: 'highest', // 'highest', 'lowest', 'name'
         scannerParsedData: [],
         scannerImageBase64: null,
-        isRegisterMode: false
+        isRegisterMode: false,
+        adminInspectingStudentId: null // Non-null when admin is viewing/editing a student's calendar
       };
 
       // ----------------------------------------------------
@@ -1547,6 +1603,8 @@
             batch_year: null,
             status: 'approved'
           };
+          state.adminInspectingStudentId = null;
+          state.activePortalTab = 'classView'; // Admin defaults straight to Class View
           persistData();
           showToast("Welcome, Master Admin!");
           renderApp();
@@ -1619,6 +1677,7 @@
 
       window.handleSignOut = function() {
         state.currentUser = null;
+        state.adminInspectingStudentId = null;
         sessionStorage.removeItem(STORAGE_KEY_SESSION);
         showToast("Signed out successfully.");
         renderApp();
@@ -1637,6 +1696,7 @@
         document.getElementById('tabContentClassView')?.classList.toggle('hidden', tabName !== 'classView');
         document.getElementById('tabContentAdminInbox')?.classList.toggle('hidden', tabName !== 'adminInbox');
 
+        if (tabName === 'myAttendance') renderCalendar();
         if (tabName === 'classView') renderClassDirectory();
         if (tabName === 'adminInbox') renderAdminInbox();
       };
@@ -1681,8 +1741,11 @@
           grid.appendChild(empty);
         }
 
-        // Active student ID for markings
-        const activeStudentId = state.currentUser?.student_id || 'TME2026-01';
+        // Active student ID for markings (Admin inspecting target OR student itself)
+        const activeStudentId = (state.currentUser?.role === 'admin' && state.adminInspectingStudentId)
+          ? state.adminInspectingStudentId
+          : (state.currentUser?.student_id || 'TME2026-01');
+
         const userMarks = state.attendance[activeStudentId] || {};
 
         // 2. Insert Month Days
@@ -1702,7 +1765,7 @@
             cell.classList.add('locked');
             pillHtml = `<span class="day-pill pill-locked">🔒</span>`;
           } else {
-            // Clickable Day
+            // Clickable Day: editable by student for themselves or by admin in inspect mode
             cell.onclick = () => window.openStatusModal(dateStr);
 
             if (status === 'present') {
@@ -1779,7 +1842,11 @@
         const dateStr = state.selectedDateForModal;
         if (!dateStr || !state.currentUser) return;
 
-        const sId = state.currentUser.student_id;
+        // Apply either to the student currently being inspected by Admin, or current student
+        const sId = (state.currentUser.role === 'admin' && state.adminInspectingStudentId)
+          ? state.adminInspectingStudentId
+          : state.currentUser.student_id;
+
         if (!state.attendance[sId]) state.attendance[sId] = {};
 
         if (statusType === 'clear') {
@@ -1793,6 +1860,94 @@
         renderCalendar();
         renderHeaderAndStats();
         showToast(`Attendance updated for ${dateStr}`);
+      };
+
+      // ----------------------------------------------------
+      // ADMIN INSPECTION & EDIT STUDENT ATTENDANCE
+      // ----------------------------------------------------
+      window.adminInspectStudentAttendance = function(studentId) {
+        const student = state.profiles.find(p => p.student_id === studentId);
+        if (!student) return;
+
+        state.adminInspectingStudentId = studentId;
+
+        // Switch to the calendar tab and show inspection banner
+        const notice = document.getElementById('adminInspectNotice');
+        const title = document.getElementById('adminInspectStudentTitle');
+        if (notice && title) {
+          title.textContent = `${student.full_name} (${student.student_id}) · ${student.batch_year === 1 ? '1st Year' : '2nd Year'}`;
+          notice.classList.remove('hidden');
+        }
+
+        // Temporarily reveal calendar for admin inspection
+        document.getElementById('tabContentMyAttendance')?.classList.remove('hidden');
+        document.getElementById('tabContentClassView')?.classList.add('hidden');
+        document.getElementById('tabBtnMyAttendance')?.classList.remove('hidden');
+        document.getElementById('tabBtnMyAttendance')?.classList.add('active');
+        document.getElementById('tabBtnClassView')?.classList.remove('active');
+
+        renderHeaderAndStats();
+        renderCalendar();
+        showToast(`Now editing attendance for ${student.full_name}`);
+      };
+
+      window.exitAdminStudentInspection = function() {
+        state.adminInspectingStudentId = null;
+        document.getElementById('adminInspectNotice')?.classList.add('hidden');
+        window.switchPortalTab('classView');
+        renderHeaderAndStats();
+      };
+
+      // ----------------------------------------------------
+      // ADMIN EDIT STUDENT DETAILS (COHORT / REMOVE)
+      // ----------------------------------------------------
+      window.openAdminEditStudentModal = function(studentId) {
+        const student = state.profiles.find(p => p.student_id === studentId);
+        if (!student) return;
+
+        document.getElementById('editStudentTargetId').value = student.student_id;
+        document.getElementById('editStudentFullName').value = student.full_name;
+        document.getElementById('editStudentRollId').value = student.student_id;
+        document.getElementById('editStudentCohortSelect').value = String(student.batch_year || 1);
+
+        document.getElementById('adminEditStudentModal')?.classList.remove('hidden');
+      };
+
+      window.closeAdminEditStudentModal = function() {
+        document.getElementById('adminEditStudentModal')?.classList.add('hidden');
+      };
+
+      window.saveAdminStudentChanges = function() {
+        const studentId = document.getElementById('editStudentTargetId')?.value;
+        const newName = document.getElementById('editStudentFullName')?.value.trim();
+        const newCohort = parseInt(document.getElementById('editStudentCohortSelect')?.value || '1', 10);
+
+        const student = state.profiles.find(p => p.student_id === studentId);
+        if (student) {
+          if (newName) student.full_name = newName;
+          student.batch_year = newCohort;
+          persistData();
+          showToast(`Updated ${student.full_name} to ${newCohort === 1 ? '1st Year' : '2nd Year'}!`);
+          window.closeAdminEditStudentModal();
+          renderClassDirectory();
+        }
+      };
+
+      window.deleteStudentFromDirectory = function() {
+        const studentId = document.getElementById('editStudentTargetId')?.value;
+        const student = state.profiles.find(p => p.student_id === studentId);
+        if (!student) return;
+
+        // Remove student and delete their attendance records
+        state.profiles = state.profiles.filter(p => p.student_id !== studentId);
+        if (state.attendance[studentId]) {
+          delete state.attendance[studentId];
+        }
+
+        persistData();
+        showToast(`Removed student ${student.full_name} successfully.`);
+        window.closeAdminEditStudentModal();
+        renderClassDirectory();
       };
 
       // ----------------------------------------------------
@@ -2052,7 +2207,10 @@ Return a JSON object with:
 
       window.applyScannerAttendance = function() {
         if (!state.currentUser || !state.scannerParsedData.length) return;
-        const sId = state.currentUser.student_id;
+        const sId = (state.currentUser.role === 'admin' && state.adminInspectingStudentId)
+          ? state.adminInspectingStudentId
+          : state.currentUser.student_id;
+
         if (!state.attendance[sId]) state.attendance[sId] = {};
 
         let targetYear = 2026;
@@ -2160,6 +2318,7 @@ Return a JSON object with:
             const isY1 = st.batch_year === 1;
             const badgeClass = isY1 ? 'badge-year1' : 'badge-year2';
             const badgeLabel = isY1 ? '1st Year' : '2nd Year';
+            const isAdmin = user.role === 'admin';
 
             const card = document.createElement('div');
             card.className = 'student-tile';
@@ -2170,7 +2329,14 @@ Return a JSON object with:
                     <h4 style="font-weight: 800; font-size: 1.05rem; color: var(--neutral-900);">${st.full_name}</h4>
                     <span style="font-size: 0.72rem; color: var(--neutral-600); font-weight: 600;">ID: ${st.student_id}</span>
                   </div>
-                  <span class="badge ${badgeClass}">${badgeLabel}</span>
+                  <div style="display: flex; align-items: center; gap: 0.35rem;">
+                    <span class="badge ${badgeClass}">${badgeLabel}</span>
+                    ${isAdmin ? `
+                      <button onclick="window.openAdminEditStudentModal('${st.student_id}')" title="Edit Student or Cohort" style="background: var(--neutral-100); border: 1px solid var(--neutral-200); border-radius: 6px; padding: 3px 6px; font-size: 0.75rem; cursor: pointer; color: var(--neutral-700);">
+                        ⚙️ Edit
+                      </button>
+                    ` : ''}
+                  </div>
                 </div>
 
                 <div style="display: flex; align-items: center; justify-content: space-between; margin: 0.75rem 0; background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;">
@@ -2179,10 +2345,17 @@ Return a JSON object with:
                 </div>
               </div>
 
-              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--neutral-600); border-top: 1px solid var(--neutral-200); padding-top: 0.5rem;">
-                <span>Present: <strong>${stStats.present}</strong></span>
-                <span>Absent: <strong>${stStats.absent}</strong></span>
-                <span>Days: <strong>${stStats.countedDays}</strong></span>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--neutral-600); border-top: 1px solid var(--neutral-200); padding-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <span>P: <strong>${stStats.present}</strong></span> ·
+                  <span>A: <strong>${stStats.absent}</strong></span> ·
+                  <span>Days: <strong>${stStats.countedDays}</strong></span>
+                </div>
+                ${isAdmin ? `
+                  <button class="btn btn-outline btn-sm" style="font-size: 0.72rem; padding: 0.25rem 0.6rem;" onclick="window.adminInspectStudentAttendance('${st.student_id}')">
+                    📅 Edit Attendance
+                  </button>
+                ` : ''}
               </div>
             `;
             grid.appendChild(card);
@@ -2287,6 +2460,7 @@ Return a JSON object with:
         const user = state.currentUser;
         const actions = document.getElementById('headerUserActions');
         const adminInboxBtn = document.getElementById('tabBtnAdminInbox');
+        const myAttendanceBtn = document.getElementById('tabBtnMyAttendance');
         const redDot = document.getElementById('inboxRedDot');
 
         // Check pending count for notification badge
@@ -2304,7 +2478,6 @@ Return a JSON object with:
           return;
         }
 
-        // Header User Indicator
         const isAdm = user.role === 'admin';
         const badgeClass = isAdm ? 'badge-admin' : (user.batch_year === 2 ? 'badge-year2' : 'badge-year1');
         const badgeLabel = isAdm ? 'Master Admin' : (user.batch_year === 2 ? '2nd Year' : '1st Year');
@@ -2316,12 +2489,26 @@ Return a JSON object with:
           `;
         }
 
+        // Admin Navigation Control:
+        // Hide "My Attendance" tab for admin unless inspecting a student
+        if (myAttendanceBtn) {
+          if (isAdm && !state.adminInspectingStudentId) {
+            myAttendanceBtn.classList.add('hidden');
+          } else {
+            myAttendanceBtn.classList.remove('hidden');
+          }
+        }
+
         // Admin Inbox Visibility
         if (adminInboxBtn) {
           adminInboxBtn.classList.toggle('hidden', !isAdm);
         }
 
-        // Fill Student Metrics in My Attendance
+        // Fill Metrics in My Attendance (or Inspected Student)
+        const inspectedStudent = (isAdm && state.adminInspectingStudentId)
+          ? state.profiles.find(p => p.student_id === state.adminInspectingStudentId)
+          : user;
+
         const nameEl = document.getElementById('dashStudentName');
         const cohortEl = document.getElementById('dashCohortBadge');
         const statusEl = document.getElementById('dashStatusBadge');
@@ -2331,18 +2518,19 @@ Return a JSON object with:
         const gaugeVal = document.getElementById('gaugePercentage');
         const gaugeNotice = document.getElementById('gaugeNotice');
 
-        if (nameEl) nameEl.textContent = user.full_name;
+        if (nameEl) nameEl.textContent = inspectedStudent.full_name;
         if (cohortEl) {
-          cohortEl.textContent = isAdm ? 'All Cohorts' : (user.batch_year === 2 ? '2nd Year Cohort' : '1st Year Cohort');
-          cohortEl.className = `badge ${isAdm ? 'badge-admin' : (user.batch_year === 2 ? 'badge-year2' : 'badge-year1')}`;
+          const isY2 = inspectedStudent.batch_year === 2;
+          cohortEl.textContent = isY2 ? '2nd Year Cohort' : '1st Year Cohort';
+          cohortEl.className = `badge ${isY2 ? 'badge-year2' : 'badge-year1'}`;
         }
         if (statusEl) {
-          statusEl.textContent = user.status === 'approved' ? 'Verified Account' : 'Pending Approval';
-          statusEl.className = `badge ${user.status === 'approved' ? 'badge-approved' : 'badge-pending'}`;
+          statusEl.textContent = inspectedStudent.status === 'approved' ? 'Verified Account' : 'Pending Approval';
+          statusEl.className = `badge ${inspectedStudent.status === 'approved' ? 'badge-approved' : 'badge-pending'}`;
         }
 
         // Calculate Stats
-        const stats = calculateStats(user.student_id);
+        const stats = calculateStats(inspectedStudent.student_id);
         if (mPresent) mPresent.textContent = stats.present;
         if (mAbsent) mAbsent.textContent = stats.absent;
         if (mCounted) mCounted.textContent = stats.countedDays;
@@ -2372,10 +2560,14 @@ Return a JSON object with:
         } else {
           authView?.classList.add('hidden');
           portalView?.classList.remove('hidden');
+
+          // Ensure Admin lands on classView, not myAttendance
+          if (state.currentUser.role === 'admin' && state.activePortalTab === 'myAttendance' && !state.adminInspectingStudentId) {
+            state.activePortalTab = 'classView';
+          }
+
+          window.switchPortalTab(state.activePortalTab);
           renderHeaderAndStats();
-          renderCalendar();
-          if (state.activePortalTab === 'classView') renderClassDirectory();
-          if (state.activePortalTab === 'adminInbox') renderAdminInbox();
         }
       }
 
