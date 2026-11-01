@@ -648,16 +648,18 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Admin ID</label>
-          <input id="inputAdminID" type="text" class="form-input" value="ADMIN01" />
+          <label class="form-label">Admin ID / Username</label>
+          <input id="inputAdminID" type="text" class="form-input" placeholder="Enter Admin ID" autocomplete="off" />
         </div>
 
         <div class="form-group">
-          <label class="form-label">Admin Mobile / Passkey</label>
-          <input id="inputAdminMobile" type="password" class="form-input" value="9999999999" />
-          <span style="font-size: 0.7rem; color: #059669; font-weight: 600; display: block; margin-top: 0.25rem;">
-            Default Admin: ID <strong>ADMIN01</strong> / Pass <strong>9999999999</strong>
-          </span>
+          <label class="form-label">Password / Security PIN</label>
+          <div style="position: relative;">
+            <input id="inputAdminMobile" type="password" class="form-input" placeholder="Enter Admin Password" autocomplete="current-password" style="padding-right: 2.5rem;" />
+            <button type="button" onclick="window.toggleAdminPasswordVisibility()" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: #64748b; background: none; border: none; cursor: pointer;">
+              👁️
+            </button>
+          </div>
         </div>
 
         <button class="btn btn-primary w-full" style="padding: 0.75rem; margin-top: 0.5rem;" onclick="window.handleAdminAuth()">
@@ -992,9 +994,9 @@
 
       // Initial clean storage defaults
       const DEFAULT_ADMIN = {
-        student_id: 'ADMIN01',
+        student_id: 'TME_ADMIN_2026',
         full_name: 'TME Administrator',
-        mobile: '9999999999',
+        mobile: 'TME@80Pass',
         role: 'admin',
         batch_year: null,
         status: 'approved'
@@ -1021,9 +1023,16 @@
           const storedProfiles = localStorage.getItem('nsti_app_profiles');
           state.profiles = storedProfiles ? JSON.parse(storedProfiles) : [];
           
-          // Ensure Admin is always present
-          if (!state.profiles.some(p => p.student_id === 'ADMIN01')) {
+          // Remove outdated legacy admin if present
+          state.profiles = state.profiles.filter(p => p.student_id !== 'ADMIN01');
+
+          // Ensure updated secure Admin is always registered
+          const existingAdmin = state.profiles.find(p => p.student_id === DEFAULT_ADMIN.student_id);
+          if (!existingAdmin) {
             state.profiles.unshift(DEFAULT_ADMIN);
+          } else {
+            // Keep password/key updated
+            existingAdmin.mobile = DEFAULT_ADMIN.mobile;
           }
 
           const storedAttendance = localStorage.getItem('nsti_app_attendance');
@@ -1565,7 +1574,12 @@
         const id = document.getElementById('inputAdminID')?.value.trim();
         const pass = document.getElementById('inputAdminMobile')?.value.trim();
 
-        if (id === 'ADMIN01' && pass === '9999999999') {
+        if (!id || !pass) {
+          showToast("Please enter Admin ID and Password.");
+          return;
+        }
+
+        if (id === 'TME_ADMIN_2026' && pass === 'TME@80Pass') {
           const adminProfile = state.profiles.find(p => p.role === 'admin') || DEFAULT_ADMIN;
           state.currentUser = adminProfile;
           saveData();
@@ -1573,8 +1587,14 @@
           window.switchTab('adminInbox');
           renderApp();
         } else {
-          showToast("Invalid Admin ID or Passkey.");
+          showToast("Invalid Admin ID or Password.");
         }
+      };
+
+      window.toggleAdminPasswordVisibility = function() {
+        const input = document.getElementById('inputAdminMobile');
+        if (!input) return;
+        input.type = input.type === 'password' ? 'text' : 'password';
       };
 
       window.handleSignOut = function() {
