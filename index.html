@@ -1369,11 +1369,27 @@
   <!-- Toast Notification Box -->
   <div id="toastMessage">Notification message</div>
 
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <!-- ======================================================== -->
   <!-- 6. JAVASCRIPT LOGIC & STATE CONTROLLER                   -->
   <!-- ======================================================== -->
   <script>
     (function() {
+      // Supabase Cloud Configuration
+      const SUPABASE_PROJECT_URL = 'https://qhbygsuwpnnthltbtxvr.supabase.co';
+      const SUPABASE_ANON_KEY = 'YOUR_FULL_SUPABASE_ANON_KEY_HERE';
+
+      let supabase = null;
+      try {
+        if (window.supabase && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('YOUR_FULL')) {
+          supabase = window.supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY);
+        }
+      } catch (err) {
+        console.warn('Supabase initialization fallback:', err);
+      }
+
       // Configuration & Constants
       const MIN_EDITABLE_DATE = '2026-08-10';
       const STORAGE_KEY_PROFILES = 'tme_profiles_v3';
@@ -1389,53 +1405,11 @@
           role: 'admin',
           batch_year: null,
           status: 'approved'
-        },
-        {
-          student_id: 'TME2026-01',
-          full_name: 'Aarav Kumar',
-          mobile: '9876543210',
-          role: 'student',
-          batch_year: 1,
-          status: 'approved'
-        },
-        {
-          student_id: 'TME2025-14',
-          full_name: 'Yestheri Rao',
-          mobile: '9123456780',
-          role: 'student',
-          batch_year: 2,
-          status: 'approved'
-        },
-        {
-          student_id: 'TME2026-09',
-          full_name: 'Kiran Patel',
-          mobile: '9845123456',
-          role: 'student',
-          batch_year: 1,
-          status: 'pending'
         }
       ];
 
       // Initial Seed Attendance for Aug & Oct
-      const DEFAULT_ATTENDANCE = {
-        'TME2026-01': {
-          '2026-08-10': 'present',
-          '2026-08-11': 'present',
-          '2026-08-12': 'present',
-          '2026-08-13': 'present',
-          '2026-08-14': 'present',
-          '2026-08-17': 'present',
-          '2026-08-18': 'absent',
-          '2026-08-19': 'present'
-        },
-        'TME2025-14': {
-          '2026-08-10': 'present',
-          '2026-08-11': 'present',
-          '2026-08-12': 'absent',
-          '2026-08-13': 'present',
-          '2026-08-14': 'present'
-        }
-      };
+      const DEFAULT_ATTENDANCE = {};
 
       // Application State
       const state = {
@@ -1455,9 +1429,9 @@
       };
 
       // ----------------------------------------------------
-      // STORAGE MANAGEMENT
+      // STORAGE & SUPABASE CLOUD SYNC
       // ----------------------------------------------------
-      function loadPersistedData() {
+      async function loadPersistedData() {
         try {
           const storedProfiles = localStorage.getItem(STORAGE_KEY_PROFILES);
           state.profiles = storedProfiles ? JSON.parse(storedProfiles) : DEFAULT_PROFILES;
@@ -1480,9 +1454,69 @@
         } catch(e) {
           state.currentUser = null;
         }
+
+        // Fetch from Supabase cloud database if connected
+        if (supabase) {
+          try {
+            const { data: profilesData } = await supabase.from('profiles').select('*');
+            if (profilesData && profilesData.length > 0) {
+              state.profiles = profilesData;
+              localStorage.setItem(STORAGE_KEY_PROFILES, JSON.stringify(state.profiles));
+            }
+
+            const { data: attendanceData } = await supabase.from('attendance').select('*');
+            if (attendanceData && attendanceData.length > 0) {
+              const attMap = {};
+              attendanceData.forEach(row => {
+                if (!attMap[row.student_id]) attMap[row.student_id] = {};
+                attMap[row.student_id][row.date] = row.status;
+              });
+              state.attendance = attMap;
+              localStorage.setItem(STORAGE_KEY_ATTENDANCE, JSON.stringify(state.attendance));
+            }
+          } catch(cloudErr) {
+            console.warn('Could not sync with Supabase cloud:', cloudErr);
+          }
+        }
       }
 
-      function persistData() {
+      function setupRealtimeListeners() {
+        if (!supabase) return;
+        try {
+          supabase
+            .channel('portal-live-sync')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => {
+              const { data } = await supabase.from('profiles').select('*');
+              if (data) {
+                state.profiles = data;
+                localStorage.setItem(STORAGE_KEY_PROFILES, JSON.stringify(state.profiles));
+                renderHeaderAndStats();
+                if (state.activePortalTab === 'classView') renderClassDirectory();
+                if (state.activePortalTab === 'adminInbox') renderAdminInbox();
+              }
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, async () => {
+              const { data } = await supabase.from('attendance').select('*');
+              if (data) {
+                const attMap = {};
+                data.forEach(row => {
+                  if (!attMap[row.student_id]) attMap[row.student_id] = {};
+                  attMap[row.student_id][row.date] = row.status;
+                });
+                state.attendance = attMap;
+                localStorage.setItem(STORAGE_KEY_ATTENDANCE, JSON.stringify(state.attendance));
+                renderHeaderAndStats();
+                if (state.activePortalTab === 'myAttendance') renderCalendar();
+                if (state.activePortalTab === 'classView') renderClassDirectory();
+              }
+            })
+            .subscribe();
+        } catch(err) {
+          console.warn('Realtime subscription not active:', err);
+        }
+      }
+
+      async function persistData() {
         try {
           localStorage.setItem(STORAGE_KEY_PROFILES, JSON.stringify(state.profiles));
           localStorage.setItem(STORAGE_KEY_ATTENDANCE, JSON.stringify(state.attendance));
@@ -1603,17 +1637,15 @@
             batch_year: null,
             status: 'approved'
           };
-          state.adminInspectingStudentId = null;
-          state.activePortalTab = 'classView'; // Admin defaults straight to Class View
           persistData();
-          showToast("Welcome, Master Admin!");
+          showToast("Welcome Master Admin!");
           renderApp();
         } else {
-          showToast("Invalid Admin credentials!");
+          showToast("Invalid credentials! Check Admin ID & Password.");
         }
       };
 
-      window.handleStudentSubmit = function(e) {
+      window.handleStudentSubmit = async function(e) {
         if (e) e.preventDefault();
         const rollId = document.getElementById('studentRollInput')?.value.trim();
         const mobile = document.getElementById('studentMobileInput')?.value.trim();
@@ -1651,13 +1683,21 @@
           state.profiles.push(newStudent);
           state.currentUser = newStudent;
           persistData();
+
+          if (supabase) {
+            try {
+              await supabase.from('profiles').upsert([newStudent]);
+            } catch(e) {
+              console.warn('Supabase profiles sync error:', e);
+            }
+          }
+
           showToast("Registration submitted! Pending Admin approval.");
           renderApp();
         } else {
           // Sign In
           let student = state.profiles.find(p => p.student_id.toLowerCase() === rollId.toLowerCase() && p.role === 'student');
           if (!student) {
-            // Auto register placeholder
             student = {
               student_id: rollId,
               full_name: `Student (${rollId})`,
@@ -1667,6 +1707,11 @@
               status: 'pending'
             };
             state.profiles.push(student);
+            if (supabase) {
+              try {
+                await supabase.from('profiles').upsert([student]);
+              } catch(e) {}
+            }
           }
           state.currentUser = student;
           persistData();
@@ -1826,23 +1871,25 @@
       // ----------------------------------------------------
       window.openStatusModal = function(dateStr) {
         state.selectedDateForModal = dateStr;
-        const dObj = new Date(dateStr + 'T00:00:00');
-        const formatted = dObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const modal = document.getElementById('statusPickerModal');
         const label = document.getElementById('pickerDateLabel');
-        if (label) label.textContent = formatted;
-
-        document.getElementById('statusPickerModal')?.classList.remove('hidden');
+        if (label) {
+          const d = new Date(dateStr + 'T00:00:00');
+          label.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        if (modal) modal.classList.remove('hidden');
       };
 
       window.closeStatusModal = function() {
-        document.getElementById('statusPickerModal')?.classList.add('hidden');
+        state.selectedDateForModal = null;
+        const modal = document.getElementById('statusPickerModal');
+        if (modal) modal.classList.add('hidden');
       };
 
-      window.applySelectedDateStatus = function(statusType) {
+      window.applySelectedDateStatus = async function(statusType) {
         const dateStr = state.selectedDateForModal;
         if (!dateStr || !state.currentUser) return;
 
-        // Apply either to the student currently being inspected by Admin, or current student
         const sId = (state.currentUser.role === 'admin' && state.adminInspectingStudentId)
           ? state.adminInspectingStudentId
           : state.currentUser.student_id;
@@ -1851,8 +1898,22 @@
 
         if (statusType === 'clear') {
           delete state.attendance[sId][dateStr];
+          if (supabase) {
+            try {
+              await supabase.from('attendance').delete().match({ student_id: sId, date: dateStr });
+            } catch(e) {}
+          }
         } else {
           state.attendance[sId][dateStr] = statusType;
+          if (supabase) {
+            try {
+              await supabase.from('attendance').upsert([{
+                student_id: sId,
+                date: dateStr,
+                status: statusType
+              }]);
+            } catch(e) {}
+          }
         }
 
         persistData();
@@ -2421,10 +2482,10 @@ Return a JSON object with:
               <button class="btn btn-primary btn-sm" onclick="window.approveRequest('${req.student_id}', 1)">
                 Approve 1st Yr
               </button>
-              <button class="btn btn-sm" style="background: var(--amber-500); color: #fff;" onclick="window.approveRequest('${req.student_id}', 2)">
+              <button class="btn btn-primary btn-sm" style="background: var(--amber-600);" onclick="window.approveRequest('${req.student_id}', 2)">
                 Approve 2nd Yr
               </button>
-              <button class="btn btn-outline btn-sm" style="color: var(--danger-600);" onclick="window.rejectRequest('${req.student_id}')">
+              <button class="btn btn-outline btn-sm" style="color: var(--danger-600); border-color: var(--danger-100);" onclick="window.rejectRequest('${req.student_id}')">
                 Reject
               </button>
             </div>
@@ -2433,21 +2494,35 @@ Return a JSON object with:
         });
       }
 
-      window.approveRequest = function(studentId, batchYear) {
+      window.approveRequest = async function(studentId, batchYear) {
         const student = state.profiles.find(p => p.student_id === studentId);
         if (student) {
           student.status = 'approved';
           student.batch_year = batchYear;
           persistData();
+
+          if (supabase) {
+            try {
+              await supabase.from('profiles').update({ status: 'approved', batch_year: batchYear }).eq('student_id', studentId);
+            } catch(e) {}
+          }
+
           showToast(`Approved ${student.full_name} as ${batchYear === 1 ? '1st' : '2nd'} Year!`);
           renderAdminInbox();
           renderHeaderAndStats();
         }
       };
 
-      window.rejectRequest = function(studentId) {
+      window.rejectRequest = async function(studentId) {
         state.profiles = state.profiles.filter(p => p.student_id !== studentId);
         persistData();
+
+        if (supabase) {
+          try {
+            await supabase.from('profiles').delete().eq('student_id', studentId);
+          } catch(e) {}
+        }
+
         showToast("Registration rejected and cleared.");
         renderAdminInbox();
         renderHeaderAndStats();
@@ -2572,8 +2647,9 @@ Return a JSON object with:
       }
 
       // Initialize on DOM Ready
-      document.addEventListener('DOMContentLoaded', () => {
-        loadPersistedData();
+      document.addEventListener('DOMContentLoaded', async () => {
+        await loadPersistedData();
+        setupRealtimeListeners();
         renderApp();
       });
     })();
